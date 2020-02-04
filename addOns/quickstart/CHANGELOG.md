@@ -4,10 +4,20 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- Warning when HUD is enabled only in scope
 
+
+## [27] - 2020-01-17
+### Added
+- Add info and repo URLs.
+- Added online link to ZAP in Ten videos
+
+### Changed
 - Maintenance changes.
 - Link to newer Getting Started Guide.
 - Improve permissions and space handling when saving.
+- Updated for the new site
 
 ## [26] - 2019-06-07
 
@@ -118,4 +128,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[27]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v27
 [26]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v26

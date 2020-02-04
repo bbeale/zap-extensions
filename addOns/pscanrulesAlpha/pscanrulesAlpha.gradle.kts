@@ -1,4 +1,4 @@
-version = "26"
+version = "27"
 description = "The alpha quality Passive Scanner rules"
 
 zapAddOn {
@@ -7,6 +7,7 @@ zapAddOn {
 
     manifest {
         author.set("ZAP Dev Team")
+        url.set("https://www.zaproxy.org/docs/desktop/addons/passive-scan-rules-alpha/")
     }
 }
 

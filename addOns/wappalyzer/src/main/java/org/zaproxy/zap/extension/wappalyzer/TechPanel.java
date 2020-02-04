@@ -20,9 +20,12 @@
 package org.zaproxy.zap.extension.wappalyzer;
 
 import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -30,13 +33,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableCellRenderer;
 import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.renderer.DefaultTableRenderer;
+import org.jdesktop.swingx.renderer.MappedValue;
+import org.jdesktop.swingx.renderer.StringValues;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.AbstractPanel;
-import org.parosproxy.paros.model.SiteNode;
 import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.utils.SortedComboBoxModel;
-import org.zaproxy.zap.view.ScanPanel;
+import org.zaproxy.zap.utils.TableExportButton;
 
 public class TechPanel extends AbstractPanel {
 
@@ -55,6 +61,27 @@ public class TechPanel extends AbstractPanel {
 
     private JXTable techTable = null;
     private TechTableModel techModel = new TechTableModel();
+
+    private TableExportButton<JXTable> exportButton = null;
+
+    private static final Icon TRANSPARENT_ICON =
+            new Icon() {
+
+                @Override
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                    // Nothing to do.
+                }
+
+                @Override
+                public int getIconWidth() {
+                    return 32;
+                }
+
+                @Override
+                public int getIconHeight() {
+                    return 32;
+                }
+            };
 
     public TechPanel(ExtensionWappalyzer extension) {
         super();
@@ -131,6 +158,7 @@ public class TechPanel extends AbstractPanel {
             GridBagConstraints gridBagConstraints0 = new GridBagConstraints();
             GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
             GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
+            GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
             GridBagConstraints gridBagConstraintsx = new GridBagConstraints();
 
             gridBagConstraints0.gridx = 0;
@@ -148,6 +176,11 @@ public class TechPanel extends AbstractPanel {
             gridBagConstraints2.insets = new java.awt.Insets(0, 0, 0, 0);
             gridBagConstraints2.anchor = java.awt.GridBagConstraints.WEST;
 
+            gridBagConstraints3.gridx = 3;
+            gridBagConstraints3.gridy = 0;
+            gridBagConstraints3.insets = new java.awt.Insets(0, 0, 0, 0);
+            gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
+
             gridBagConstraintsx.gridx = 3;
             gridBagConstraintsx.gridy = 0;
             gridBagConstraintsx.weightx = 1.0;
@@ -162,6 +195,7 @@ public class TechPanel extends AbstractPanel {
                     new JLabel(Constant.messages.getString("wappalyzer.toolbar.site.label")),
                     gridBagConstraints1);
             panelToolbar.add(getSiteSelect(), gridBagConstraints2);
+            panelToolbar.add(getExportButton(), gridBagConstraints3);
 
             panelToolbar.add(t1, gridBagConstraintsx);
         }
@@ -177,25 +211,6 @@ public class TechPanel extends AbstractPanel {
         return jScrollPane;
     }
 
-    private void setParamsTableColumnSizes() {
-        // Just set the 2 columns that dont need much space and let the rest autosize
-        techTable
-                .getColumn(Constant.messages.getString("wappalyzer.table.header.icon"))
-                .setMinWidth(25);
-        techTable
-                .getColumn(Constant.messages.getString("wappalyzer.table.header.icon"))
-                .setPreferredWidth(25); // icon
-        techTable
-                .getColumn(Constant.messages.getString("wappalyzer.table.header.icon"))
-                .setMaxWidth(35);
-
-        /* Dont currently support confidence
-        techTable.getColumnModel().getColumn(5).setMinWidth(80);
-        techTable.getColumnModel().getColumn(5).setMaxWidth(80);
-        techTable.getColumnModel().getColumn(5).setPreferredWidth(80);	// confidence
-        */
-    }
-
     protected JXTable getTechTable() {
         if (techTable == null) {
             techTable = new JXTable(techModel);
@@ -205,13 +220,23 @@ public class TechPanel extends AbstractPanel {
             techTable.setRowSelectionAllowed(true);
             techTable.setAutoCreateRowSorter(true);
             techTable.setColumnControlVisible(true);
-
-            this.setParamsTableColumnSizes();
+            TableCellRenderer renderer =
+                    new DefaultTableRenderer(
+                            new MappedValue(
+                                    StringValues.TO_STRING,
+                                    item -> {
+                                        if (item == null) {
+                                            return null;
+                                        }
+                                        Icon icon = ((Application) item).getIcon();
+                                        return icon != null ? icon : TRANSPARENT_ICON;
+                                    }),
+                            JLabel.LEADING);
+            techTable.setDefaultRenderer(Application.class, renderer);
 
             techTable.setName(PANEL_NAME);
             techTable.setFont(new java.awt.Font("Dialog", java.awt.Font.PLAIN, 11));
             techTable.setDoubleBuffered(true);
-            techTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
             techTable.addMouseListener(
                     new java.awt.event.MouseAdapter() {
                         @Override
@@ -264,7 +289,6 @@ public class TechPanel extends AbstractPanel {
     }
 
     public void addSite(String site) {
-        site = ScanPanel.cleanSiteName(site, true);
         if (siteModel.getIndexOf(site) < 0) {
             siteModel.addElement(site);
             if (siteModel.getSize() == 2 && currentSite == null) {
@@ -275,20 +299,12 @@ public class TechPanel extends AbstractPanel {
         }
     }
 
-    private void siteSelected(String site) {
-        site = ScanPanel.cleanSiteName(site, true);
+    void siteSelected(String site) {
         if (!site.equals(currentSite)) {
             siteModel.setSelectedItem(site);
             techModel = extension.getTechModelForSite(site);
             this.getTechTable().setModel(techModel);
-            this.setParamsTableColumnSizes();
             currentSite = site;
-        }
-    }
-
-    public void nodeSelected(SiteNode node) {
-        if (node != null) {
-            siteSelected(ScanPanel.cleanSiteName(node, true));
         }
     }
 
@@ -319,5 +335,12 @@ public class TechPanel extends AbstractPanel {
             return (String) this.getTechTable().getValueAt(this.getTechTable().getSelectedRow(), 1);
         }
         return null;
+    }
+
+    private TableExportButton<JXTable> getExportButton() {
+        if (exportButton == null) {
+            exportButton = new TableExportButton<JXTable>(getTechTable());
+        }
+        return exportButton;
     }
 }

@@ -4,6 +4,15 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- Added links to the code in the help.
+- Add info and repo URLs.
+
+### Fixed
+- Fixed NullPointerException in Sub Resource Integrity Attribute Missing scan rule (Issue 5789).
+- Minor spacing issue in help content.
+
+## [26] - 2019-12-16
 
 ### Added
 - Add Java Serialized Object (JSO) Scanner.
@@ -211,5 +220,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated User Controlled Open Redirect, Cookie and Charset rules after testing with
 - http://www.testcases.org/watcher/ test pages.
 
+[26]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v26
 [25]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v25
 [24]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v24

@@ -29,9 +29,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.tree.TreeNode;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
 import org.apache.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
@@ -46,6 +49,7 @@ import org.parosproxy.paros.model.SiteNode;
 import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.pscan.ExtensionPassiveScan;
 import org.zaproxy.zap.extension.search.ExtensionSearch;
+import org.zaproxy.zap.view.ScanPanel;
 import org.zaproxy.zap.view.SiteMapListener;
 import org.zaproxy.zap.view.SiteMapTreeCellRenderer;
 
@@ -81,11 +85,12 @@ public class ExtensionWappalyzer extends ExtensionAdaptor
     }
 
     private WappalyzerPassiveScanner passiveScanner;
+    private WappalyzerAPI api;
 
     /**
-     * TODO Implementaion Version handling Confidence handling Add API calls - need to test for
-     * daemon mode (esp revisits) Issues Handle load session - store tech in db? Sites pull down not
-     * populated if no tech found - is this actually a problem? One pattern still fails to compile
+     * TODO Implementaion Version handling Confidence handling - need to test for daemon mode (esp
+     * revisits) Issues Handle load session - store tech in db? Sites pull down not populated if no
+     * tech found - is this actually a problem? One pattern still fails to compile
      */
     public ExtensionWappalyzer() {
         super(NAME);
@@ -120,6 +125,9 @@ public class ExtensionWappalyzer extends ExtensionAdaptor
             extensionHook.getHookView().addStatusPanel(getTechPanel());
             extensionHook.getHookMenu().addPopupMenuItem(this.getPopupMenuEvidence());
         }
+
+        this.api = new WappalyzerAPI(this);
+        extensionHook.addApiImplementor(this.api);
 
         ExtensionPassiveScan extPScan =
                 Control.getSingleton()
@@ -226,6 +234,37 @@ public class ExtensionWappalyzer extends ExtensionAdaptor
         return null;
     }
 
+    public Set<String> getSites() {
+        return Collections.unmodifiableSet(siteTechMap.keySet());
+    }
+
+    static String normalizeSite(URI uri) {
+        String lead = uri.getScheme() + "://";
+        try {
+            return lead + uri.getAuthority();
+        } catch (URIException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Unable to get authority from: " + uri.toString(), e);
+            }
+            // Shouldn't happen, but sure fallback
+            return ScanPanel.cleanSiteName(uri.toString(), true);
+        }
+    }
+
+    static String normalizeSite(String site) {
+        try {
+            site = normalizeSite(new URI(site == null ? "" : site, false));
+        } catch (URIException ue) {
+            // Shouldn't happen, but sure fallback
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Falling back to 'CleanSiteName'. Failed to create URI from: " + site, ue);
+            }
+            site = ScanPanel.cleanSiteName(site, true);
+        }
+        return site;
+    }
+
     private ExtensionSearch getExtensionSearch() {
         if (extSearch == null) {
             extSearch =
@@ -247,7 +286,7 @@ public class ExtensionWappalyzer extends ExtensionAdaptor
     @Override
     public void nodeSelected(SiteNode node) {
         // Event from SiteMapListenner
-        this.getTechPanel().nodeSelected(node);
+        this.getTechPanel().siteSelected(normalizeSite(node.getHistoryReference().getURI()));
     }
 
     @Override
@@ -297,10 +336,8 @@ public class ExtensionWappalyzer extends ExtensionAdaptor
         @SuppressWarnings("unchecked")
         Enumeration<TreeNode> en = root.children();
         while (en.hasMoreElements()) {
-            String site = ((SiteNode) en.nextElement()).getNodeName();
-            if (site.indexOf("//") >= 0) {
-                site = site.substring(site.indexOf("//") + 2);
-            }
+            String site =
+                    normalizeSite(((SiteNode) en.nextElement()).getHistoryReference().getURI());
             this.getTechPanel().addSite(site);
         }
     }
@@ -313,5 +350,18 @@ public class ExtensionWappalyzer extends ExtensionAdaptor
     @Override
     public void sessionScopeChanged(Session arg0) {
         // Ignore
+    }
+
+    @Override
+    public void postInstall() {
+        super.postInstall();
+        if (getView() != null) {
+            getTechPanel().setTabFocus();
+            // Un-comment to test icon rendering
+            /*
+             * getApplications() .forEach( app -> addApplicationsToSite( "http://localhost", new
+             * ApplicationMatch(app)));
+             */
+        }
     }
 }

@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 ### Changed
+- Minimum ZAP version is now 2.9.0. (Various scan rules adjusted to address core deprecations.)
+- 'Username Hash Found' scan rule now uses updated core functionality to retrieve configured users.
+- Tweak help for 'Cookie HttpOnly' scan rule.
+- 'Information Disclosure: Suspicious Comments' if matched within script block or JS response raise Alert with Low confidence.
+- Migrate an input file from Beta to Release that were missed during previous promotions.
+  - This addresses errors such as `[ZAP-PassiveScanner] ERROR org.zaproxy.zap.extension.pscanrules.InformationDisclosureInURL  - No such file: .... /xml/URL-information-disclosure-messages.txt`
+- 'Application Error' scan rule now supports custom payloads when used in conjunction with the Custom Payloads addon.
+
+## [26] - 2020-01-17
+
+### Changed
+- "Cookie HttpOnly", "Cookie Secure Flag", and "Cookie Without SameSite Attribute" scan rules no longer alert on expired (deleted) cookies (Issue 5295).
+
+### Added
+- Added links to the code in the help.
+- Add info and repo URLs.
+
+## [25] - 2019-12-16
+
+### Changed
 - Content Security Policy scan rule: Update to Salvation 2.7.0, add handling for script-src-elem, script-src-attr, style-src-elem, and style-src-attr (Issue 5459).
 - Minimum ZAP version is now 2.8.0.
 
@@ -145,4 +165,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[26]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v26
+[25]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v25
 [24]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v24

@@ -4,6 +4,15 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- Added links to the code in the help.
+- Add info and repo URLs.
+
+### Changed
+- 'PII Disclosure scanner' alerts and help entry renamed 'PII Disclosure' for clarity and proper title caps.
+- 'PII Disclosure' added further false positive handling with regard to exponential numbers such as 2.4670000000000001E-2 or 2.4670000000000001E2.
+
+## [21] - 2019-12-16
 
 ### Added
 - The following scan rules were added being promoted from Alpha to Beta:
@@ -145,5 +154,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[21]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v21
 [20]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v20
 [19]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v19
