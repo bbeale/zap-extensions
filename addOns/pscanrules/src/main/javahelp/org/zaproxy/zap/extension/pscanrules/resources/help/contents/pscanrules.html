@@ -11,7 +11,7 @@ Passive Scan Rules
 The following release quality passive scan rules are included in this add-on:
 
 <H2>Application Errors</H2>        
-Check server responses for HTTP 500 - Internal Server Error type responses or those that contain a known error string. 
+Check server responses for HTTP 500 - Internal Server Error type responses or those that contain a known error string. <br>
 <strong>Note:</strong> Matches made within script blocks or files are against the entire content not only comments.<br>
 At HIGH Threshold don’t alert on HTTP 500 (but do for other error patterns).<br>
 For Internal Server Error (HTTP 500) the Alert is set to Low risk and in other case it is set to Medium risk.
@@ -19,6 +19,7 @@ For Internal Server Error (HTTP 500) the Alert is set to Low risk and in other c
 <p><strong>Note:</strong> If the Custom Payloads addon is installed you can add your own Application Error strings (payloads) in the Custom Payloads options panel. 
 They will also be searched for in responses as they're passively scanned. Keep in mind that the greater the number of payloads the greater the 
 amount of time needed to passively scan.
+<p>It is also possible to add patterns to the <code>xml/application_errors.xml</code> file in ZAP's user directory.<br>
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/ApplicationErrorScanner.java">ApplicationErrorScanner.java</a>
  
@@ -115,14 +116,6 @@ Only use this feature to ignore FORMs that you know are safe, for example search
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/CSRFCountermeasures.java">CSRFCountermeasures.java</a>
 
-<H2>Header XSS Protection</H2>
-Checks for the existence of and value/setting of the X-XSS-Protection header. 
-This response header can be used to configure a user-agent's built-in reflective XSS protection.<br>
-At MEDIUM and HIGH thresholds only non-error or non-redirect HTML responses are considered.<br>
-At LOW threshold all text responses are considered including errors and redirects.
-<p>
-Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/HeaderXssProtectionScanner.java">HeaderXssProtectionScanner.java</a>
-
 <H2>Information Disclosure: Debug Errors</H2>
 This passive scanner checks the content of web responses for known Debug Error message fragments.
 Access to such details may provide a malicious individual with means by which to further abuse the web site.
@@ -192,7 +185,8 @@ is not greater than 8 characters in length then the parameter is ignored
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/TestInfoSessionIdURL.java">TestInfoSessionIdURL.java</a>
 
 <H2>Timestamp Disclosure</H2>
-A timestamp was disclosed by the application/web server.
+A timestamp was disclosed by the application/web server.<br>
+At HIGH threshold this rule does not alert on potential timestamps that are not within a range of plus or minus one year.
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/TimestampDisclosureScanner.java">TimestampDisclosureScanner.java</a>
 

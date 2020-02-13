@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+
+## [27] - 2020-02-11
+
 ### Changed
 - Minimum ZAP version is now 2.9.0. (Various scan rules adjusted to address core deprecations.)
 - 'Username Hash Found' scan rule now uses updated core functionality to retrieve configured users.
@@ -13,6 +16,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Migrate an input file from Beta to Release that were missed during previous promotions.
   - This addresses errors such as `[ZAP-PassiveScanner] ERROR org.zaproxy.zap.extension.pscanrules.InformationDisclosureInURL  - No such file: .... /xml/URL-information-disclosure-messages.txt`
 - 'Application Error' scan rule now supports custom payloads when used in conjunction with the Custom Payloads addon.
+- Timestamp Disclosure scan rule now only considers potential timestamps within plus or minus one year when used at High threshold (Issue 5837).
+- 'Application Error' scan rule's patterns file `application_errors.xml` is now copied to ZAP's home directory, which means it is editable by the user. As well as being more consistent with other similar input files.
+- 'Information Disclosure - Sensitive Information in URL' correct evidence field for some alerts, and enhance other info details (Issue 5832).
+
+### Removed
+- 'Header XSS Protection' was deprecated and removed (Issue 5849).
 
 ## [26] - 2020-01-17
 
@@ -165,6 +174,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[27]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v27
 [26]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v26
 [25]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v25
 [24]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v24
