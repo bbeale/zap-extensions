@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+
+## [17] - 2020-03-06
+
 ### Changed
 - Update with Wappalyzer icon and pattern changes.
 
@@ -99,6 +102,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - First version
 
 
+[17]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v17
 [16]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v16
 [15]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v15
 [14]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v14
