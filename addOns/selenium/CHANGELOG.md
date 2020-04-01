@@ -5,8 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+
+## [15.2.0] - 2020-03-31
+### Added
+- Support for selenium scripts which are invoked when browsers are launched.
+
 ### Changed
 - Update minimum ZAP version to 2.9.0.
+- Set Firefox browser.tabs.documentchannel pref to false to fix HUD issue
 
 ## [15.1.0] - 2020-01-17
 ### Added
@@ -92,5 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated to Selenium 2.45 and moved to release
 
+[15.2.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.2.0
 [15.1.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.1.0
 [15.0.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.0.0
