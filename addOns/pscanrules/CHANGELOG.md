@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+
+## [28] - 2020-04-08
+
 ### Changed
 - 'CSP Scanner' rule upgrade salvation library to v2.7.1.
+- 'CSP Scanner' rule now merges (intersects) multiple CSP header fields to more accurately evaluate policies and prevent parsing issues (Issue 5931).
 - 'X-Frame-Options Header Scanner' replace now invalid MSDN reference link with MDN link on X-Frame-Options (Issue 5867).
 
 ## [27] - 2020-02-11
@@ -181,6 +185,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[28]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v28
 [27]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v27
 [26]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v26
 [25]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v25
