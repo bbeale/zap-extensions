@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.testutils;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -59,13 +59,12 @@ import org.apache.log4j.PatternLayout;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
@@ -86,7 +85,7 @@ import org.zaproxy.zap.utils.I18N;
  * <p>Among other helper methods it allows to {@link #setUpZap() set up ZAP} and provides a {@link
  * #nano HTTP test server}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public abstract class TestUtils {
 
     public static final String DEFAULT_CONTENT_TYPE = "text/html;charset=ISO-8859-1";
@@ -96,7 +95,7 @@ public abstract class TestUtils {
      *
      * <p>Can be used for other temporary files/dirs.
      */
-    @ClassRule public static TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir protected static Path tempDir;
 
     static {
         try {
@@ -126,12 +125,12 @@ public abstract class TestUtils {
      */
     protected HTTPDTestServer nano;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
-        File installDir = tempDir.newFolder("install");
-        Path langDir = Files.createDirectory(installDir.toPath().resolve("lang"));
+        Path installDir = Files.createDirectory(tempDir.resolve("install"));
+        Path langDir = Files.createDirectory(installDir.resolve("lang"));
         Files.createFile(langDir.resolve("Messages.properties"));
-        Path xmlDir = Files.createDirectory(installDir.toPath().resolve("xml"));
+        Path xmlDir = Files.createDirectory(installDir.resolve("xml"));
         Files.createFile(xmlDir.resolve("log4j.properties"));
         Path configXmlPath = Files.createFile(xmlDir.resolve("config.xml"));
         Files.write(
@@ -139,8 +138,8 @@ public abstract class TestUtils {
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?><config></config>"
                         .getBytes(StandardCharsets.UTF_8));
 
-        zapInstallDir = installDir.getAbsolutePath();
-        zapHomeDir = tempDir.newFolder("home").getAbsolutePath();
+        zapInstallDir = installDir.toAbsolutePath().toString();
+        zapHomeDir = Files.createDirectory(tempDir.resolve("home")).toAbsolutePath().toString();
     }
 
     /** Sets up the log to ease debugging. */
@@ -240,7 +239,7 @@ public abstract class TestUtils {
      *
      * @throws Exception if an error occurred while deleting the home directory.
      */
-    @After
+    @AfterEach
     public void shutDown() throws Exception {
         deleteDir(Paths.get(zapHomeDir));
     }
@@ -506,12 +505,31 @@ public abstract class TestUtils {
      * @param extension the target extension to mock the messages
      */
     protected static void mockMessages(final Extension extension) {
+        mockMessages(
+                extension.getClass().getPackage().getName()
+                        + ".resources."
+                        + Constant.MESSAGES_PREFIX,
+                extension.getI18nPrefix());
+    }
+
+    /**
+     * Mocks the class variable {@link Constant#messages} using the resource bundle with the given
+     * base name and prefix.
+     *
+     * <p>The messages with the given prefix are asserted that exist before obtaining them.
+     *
+     * <p>Resource messages that do not have the {@code prefix} have an empty {@code String}.
+     *
+     * @param baseName the base name of the resource bundle.
+     * @param prefix the prefix for the resource bundle.
+     */
+    protected static void mockMessages(String baseName, String prefix) {
         I18N i18n = mock(I18N.class, withSettings().lenient());
         Constant.messages = i18n;
 
         given(i18n.getLocal()).willReturn(Locale.getDefault());
 
-        extensionResourceBundle = getExtensionResourceBundle(extension);
+        extensionResourceBundle = getExtensionResourceBundle(baseName);
         when(i18n.getString(anyString()))
                 .thenAnswer(
                         new Answer<String>() {
@@ -519,7 +537,7 @@ public abstract class TestUtils {
                             @Override
                             public String answer(InvocationOnMock invocation) {
                                 String key = (String) invocation.getArguments()[0];
-                                if (key.startsWith(extension.getI18nPrefix())) {
+                                if (key.startsWith(prefix)) {
                                     assertKeyExists(key);
                                     return extensionResourceBundle.getString(key);
                                 }
@@ -536,7 +554,7 @@ public abstract class TestUtils {
                             public String answer(InvocationOnMock invocation) {
                                 Object[] args = invocation.getArguments();
                                 String key = (String) args[0];
-                                if (key.startsWith(extension.getI18nPrefix())) {
+                                if (key.startsWith(prefix)) {
                                     assertKeyExists(key);
                                     return MessageFormat.format(
                                             extensionResourceBundle.getString(key),
@@ -548,19 +566,19 @@ public abstract class TestUtils {
                         });
     }
 
-    private static ResourceBundle getExtensionResourceBundle(Extension ext) {
+    private static ResourceBundle getExtensionResourceBundle(String baseName) {
         return ResourceBundle.getBundle(
-                ext.getClass().getPackage().getName() + ".resources." + Constant.MESSAGES_PREFIX,
+                baseName,
                 Locale.ROOT,
-                ext.getClass().getClassLoader(),
+                TestUtils.class.getClassLoader(),
                 ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES));
     }
 
     private static void assertKeyExists(String key) {
         assertTrue(
-                "The extension's ResourceBundle was not intialiased.",
-                extensionResourceBundle != null);
-        assertTrue("No resource message for: " + key, extensionResourceBundle.containsKey(key));
+                extensionResourceBundle != null,
+                "The extension's ResourceBundle was not intialiased.");
+        assertTrue(extensionResourceBundle.containsKey(key), "No resource message for: " + key);
     }
 
     /**
