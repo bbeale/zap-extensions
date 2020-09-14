@@ -51,6 +51,6 @@ public class ExtensionAscanRulesBeta extends ExtensionAdaptor {
 
     @Override
     public void unload() {
-        XXEPlugin.unload();
+        XxeScanRule.unload();
     }
 }

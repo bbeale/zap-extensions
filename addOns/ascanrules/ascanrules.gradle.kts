@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "36"
+version = "37"
 description = "The release quality Active Scanner rules"
 
 zapAddOn {
@@ -23,11 +23,10 @@ dependencies {
 
 spotless {
     javaWith3rdPartyFormatted(project, listOf(
-        "**/BufferOverflow.java",
-        "**/FormatString.java",
-        "**/TestServerSideInclude.java",
-        "**/TestInjectionCRLF.java",
-        "**/TestParameterTamper.java",
-        "**/TestServerSideInclude.java",
-        "**/TestDirectoryBrowsing.java"))
+        "**/BufferOverflowScanRule.java",
+        "**/CrlfInjectionScanRule.java",
+        "**/DirectoryBrowsingScanRule.java",
+        "**/FormatStringScanRule.java",
+        "**/ParameterTamperScanRule.java",
+        "**/ServerSideIncludeScanRule.java"))
 }

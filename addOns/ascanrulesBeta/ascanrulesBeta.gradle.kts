@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "29"
+version = "31"
 description = "The beta quality Active Scanner rules"
 
 zapAddOn {
@@ -49,5 +49,5 @@ dependencies {
 }
 
 spotless {
-    javaWith3rdPartyFormatted(project, listOf("**/IntegerOverflow.java"))
+    javaWith3rdPartyFormatted(project, listOf("**/IntegerOverflowScanRule.java"))
 }

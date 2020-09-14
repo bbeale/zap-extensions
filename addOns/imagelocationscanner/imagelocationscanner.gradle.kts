@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "2"
+version = "3"
 description = "Image Location and Privacy Passive Scanner"
 
 zapAddOn {
@@ -26,7 +26,7 @@ spotless {
         target(fileTree(projectDir) {
             include("**/*.java")
             // Ignore ILS classes.
-            exclude("**/com/veggiespam/**", "**/ImageLocationScanner.java")
+            exclude("**/com/veggiespam/**", "**/ImageLocationScanRule.java")
         })
     }
 }

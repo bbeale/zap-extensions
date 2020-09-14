@@ -3,8 +3,22 @@ All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Unreleased
+## [31] - 2020-09-02
+### Changed
+- ELMAH Information Leak ensure that test requests are appropriately rebuilt for this scan rule (Issue 6129).
+- SQL rules changed to double check timing attacks
+- Significantly reduced the number of attacks made by the SQLite rule
 
+## [30] - 2020-07-23
+### Changed
+- Anti-CSRF Tokens Check address potential false positives by only analyzing HTML responses (Issue 6089).
+
+## [29] - 2020-07-22
+### Changed
+- Maintenance Changes.
+- Backup File Disclosure: don't raise issues for non-success codes unless at LOW threshold (Issue 6059).
+- ELMAH Information Leak: don't raise issues unless content looks good unless at LOW threshold (Issue 6076).
+- Session Fixation scan rule fix potential false positive on session cookie HttpOnly, and Secure flags (Issue 6082).
 
 ## [28] - 2020-06-01
 ### Added
@@ -208,6 +222,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[31]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v31
+[30]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v30
+[29]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v29
 [28]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v28
 [27]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v27
 [26]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v26
