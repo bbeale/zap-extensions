@@ -27,12 +27,14 @@ import com.shapesecurity.salvation.data.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import net.htmlparser.jericho.Source;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
@@ -53,7 +55,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
 
     private static final String MESSAGE_PREFIX = "pscanrules.csp.";
     private static final int PLUGIN_ID = 10055;
-    private static final Logger LOGGER = Logger.getLogger(ContentSecurityPolicyScanRule.class);
+    private static final Logger LOGGER = LogManager.getLogger(ContentSecurityPolicyScanRule.class);
 
     private static final String HTTP_HEADER_CSP = "Content-Security-Policy";
     private static final String HTTP_HEADER_XCSP = "X-Content-Security-Policy";
@@ -87,11 +89,8 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
         boolean cspHeaderFound = false;
         int noticesRisk = Alert.RISK_INFO;
-        // LOGGER.setLevel(Level.DEBUG); //Enable for debugging
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Start " + id + " : " + msg.getRequestHeader().getURI().toString());
-        }
+        LOGGER.debug("Start {} : {}", id, msg.getRequestHeader().getURI());
 
         long start = System.currentTimeMillis();
 
@@ -121,6 +120,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                     cspHeaderFound ? Alert.RISK_INFO : Alert.RISK_LOW,
                     xcspOptions.get(0),
                     false,
+                    false,
                     "");
         }
 
@@ -137,6 +137,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                     cspHeaderFound ? Alert.RISK_INFO : Alert.RISK_LOW,
                     xwkcspOptions.get(0),
                     false,
+                    false,
                     "");
         }
 
@@ -145,13 +146,15 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
             Origin origin = URI.parse(msg.getRequestHeader().getURI().toString());
             Policy unifiedPolicy = new Policy(origin);
             boolean multipleCsp = cspOptions.size() > 1;
-            if (multipleCsp) {
+            boolean hasReportUri = hasReportUri(cspOptions);
+            if (multipleCsp && !hasReportUri) {
                 for (String csp : cspOptions) {
                     Policy policy = ParserWithLocation.parse(csp, origin);
                     unifiedPolicy.intersect(policy);
                 }
             }
-            String unifiedPolicyText = multipleCsp ? unifiedPolicy.show() : cspOptions.get(0);
+            String unifiedPolicyText =
+                    multipleCsp && !hasReportUri ? unifiedPolicy.show() : cspOptions.get(0);
             Policy pol =
                     ParserWithLocation.parse(
                             unifiedPolicyText, origin, notices); // Populate notices
@@ -175,6 +178,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                         noticesRisk,
                         cspOptions.get(0),
                         multipleCsp,
+                        hasReportUri,
                         unifiedPolicyText);
             }
 
@@ -205,6 +209,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                         Alert.RISK_MEDIUM,
                         cspOptions.get(0),
                         multipleCsp,
+                        hasReportUri,
                         unifiedPolicyText);
             }
 
@@ -218,6 +223,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                         Alert.RISK_MEDIUM,
                         cspOptions.get(0),
                         multipleCsp,
+                        hasReportUri,
                         unifiedPolicyText);
             }
 
@@ -231,18 +237,25 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                         Alert.RISK_MEDIUM,
                         cspOptions.get(0),
                         multipleCsp,
+                        hasReportUri,
                         unifiedPolicyText);
             }
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                    "\tScan of record "
-                            + String.valueOf(id)
-                            + " took "
-                            + (System.currentTimeMillis() - start)
-                            + " ms");
+        LOGGER.debug(
+                "\tScan of record {} took {} ms",
+                String.valueOf(id),
+                System.currentTimeMillis() - start);
+    }
+
+    private static boolean hasReportUri(List<String> cspOptions) {
+        for (String csp : cspOptions) {
+            String lowerCsp = csp.toLowerCase(Locale.ROOT);
+            if (lowerCsp.contains("report-uri")) {
+                return true;
+            }
         }
+        return false;
     }
 
     private String getCSPNoticesString(ArrayList<Notice> notices) {
@@ -383,12 +396,15 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
             int risk,
             String evidence,
             boolean multipleCsp,
+            boolean hasReportUri,
             String policy) {
         String alertName = StringUtils.isEmpty(name) ? getName() : getName() + ": " + name;
-        String otherInfo =
-                multipleCsp
-                        ? Constant.messages.getString(MESSAGE_PREFIX + "otherinfo", policy)
-                        : "";
+        String otherInfo = "";
+        if (hasReportUri) {
+            otherInfo = Constant.messages.getString(MESSAGE_PREFIX + "otherinfo.nomerge");
+        } else if (multipleCsp) {
+            otherInfo = Constant.messages.getString(MESSAGE_PREFIX + "otherinfo", policy);
+        }
 
         newAlert()
                 .setName(alertName)
@@ -400,7 +416,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                 .setSolution(getSolution())
                 .setReference(getReference())
                 .setEvidence(evidence)
-                .setCweId(16) // CWE-16: Configuration
+                .setCweId(693) // CWE-693: Protection Mechanism Failure
                 .setWascId(15) // WASC-15: Application Misconfiguration)
                 .raise();
     }

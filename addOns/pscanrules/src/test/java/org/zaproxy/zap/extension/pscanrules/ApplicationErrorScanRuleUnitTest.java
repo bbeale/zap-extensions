@@ -22,6 +22,8 @@ package org.zaproxy.zap.extension.pscanrules;
 import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.parosproxy.paros.network.HttpStatusCode.INTERNAL_SERVER_ERROR;
 import static org.parosproxy.paros.network.HttpStatusCode.NOT_FOUND;
 import static org.parosproxy.paros.network.HttpStatusCode.OK;
@@ -35,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
+import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 
@@ -72,6 +75,7 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(INTERNAL_SERVER_ERROR));
+        given(passiveScanData.isPage500(any())).willReturn(true);
         // When
         rule.setAlertThreshold(AlertThreshold.LOW);
         scanHttpResponseReceive(msg);
@@ -92,6 +96,7 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(INTERNAL_SERVER_ERROR));
+        given(passiveScanData.isPage500(any())).willReturn(true);
         // When
         rule.setAlertThreshold(AlertThreshold.MEDIUM);
         scanHttpResponseReceive(msg);
@@ -112,6 +117,7 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(INTERNAL_SERVER_ERROR));
+        given(passiveScanData.isPage500(any())).willReturn(true);
         // When
         rule.setAlertThreshold(AlertThreshold.HIGH);
         scanHttpResponseReceive(msg);
@@ -125,6 +131,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(NOT_FOUND));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(true);
         // When
         scanHttpResponseReceive(msg);
         // Then
@@ -138,6 +146,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         // When
         scanHttpResponseReceive(msg);
         // Then
@@ -151,6 +161,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         msg.setResponseBody(
                 "<html>" + "<div>" + "here a body with no evidence" + "</div>" + "</html>");
         // When
@@ -167,6 +179,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         msg.setResponseBody("<html>" + "<div>" + expectedEvidence + "</div>" + "</html>");
         // When
         scanHttpResponseReceive(msg);
@@ -185,6 +199,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         msg.setResponseBody("<html>" + "<div>" + expectedEvidence + "</div>" + "</html>");
         // When
         scanHttpResponseReceive(msg);
@@ -203,6 +219,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         msg.setResponseBody("<html>" + "<div>" + expectedEvidence + "</div>" + "</html>");
         ApplicationErrorScanRule.setPayloadProvider(() -> Arrays.asList(expectedEvidence));
         // When
@@ -222,6 +240,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         msg.setResponseBody("<html>" + "<div>" + expectedEvidence + "</div>" + "</html>");
         ApplicationErrorScanRule.setPayloadProvider(() -> Arrays.asList("notDetectedString"));
         // When
@@ -239,6 +259,8 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         HttpMessage msg = new HttpMessage();
         msg.setRequestHeader(REQUEST_HEADER);
         msg.setResponseHeader(createResponseHeader(OK));
+        given(passiveScanData.isPage500(any())).willReturn(false);
+        given(passiveScanData.isPage404(any())).willReturn(false);
         msg.setResponseBody("<html>" + "<div>" + expectedEvidence + "</div>" + "</html>");
         ApplicationErrorScanRule.setPayloadProvider(() -> Arrays.asList(expectedEvidence));
         // When
@@ -248,6 +270,25 @@ public class ApplicationErrorScanRuleUnitTest extends PassiveScannerTest<Applica
         Alert result = alertsRaised.get(0);
         assertThat(result.getEvidence(), equalTo(expectedEvidence));
         validateAlert(result);
+    }
+
+    @Test
+    public void
+            shouldNotRaiseAlertForResponseCodeOkAndContentTypeWebAssemblyWhenFilePayloadPresent()
+                    throws HttpMalformedHeaderException {
+        // Given
+        // String from standard XML file
+        String expectedEvidence = "Microsoft OLE DB Provider for ODBC Drivers";
+        HttpMessage msg = new HttpMessage();
+        msg.setRequestHeader(REQUEST_HEADER);
+        msg.setResponseHeader(createResponseHeader(OK));
+        msg.getResponseHeader().addHeader(HttpHeader.CONTENT_TYPE, "application/wasm");
+        msg.setResponseBody(expectedEvidence);
+        ApplicationErrorScanRule.setPayloadProvider(() -> Arrays.asList(expectedEvidence));
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(0));
     }
 
     private static void validateAlert(Alert alert) {

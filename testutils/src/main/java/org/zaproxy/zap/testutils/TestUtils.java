@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -47,12 +46,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
-import net.htmlparser.jericho.Config;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -71,7 +64,6 @@ import org.parosproxy.paros.extension.ExtensionLoader;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
-import org.zaproxy.zap.ZAP;
 import org.zaproxy.zap.model.Tech;
 import org.zaproxy.zap.model.TechSet;
 import org.zaproxy.zap.utils.I18N;
@@ -94,10 +86,6 @@ public abstract class TestUtils {
      */
     @TempDir protected static Path tempDir;
 
-    static {
-        Config.LoggerProvider = ZAP.JERICHO_LOGGER_PROVIDER;
-    }
-
     private static String zapInstallDir;
     private static String zapHomeDir;
 
@@ -106,7 +94,7 @@ public abstract class TestUtils {
      *
      * <p>Lazily initialised, in {@link #mockMessages(Extension)}.
      */
-    private static ResourceBundle extensionResourceBundle;
+    protected static ResourceBundle extensionResourceBundle;
 
     /**
      * A HTTP test server.
@@ -121,21 +109,10 @@ public abstract class TestUtils {
     public static void beforeClass() throws Exception {
         Path installDir = Files.createDirectory(tempDir.resolve("install"));
         Path xmlDir = Files.createDirectory(installDir.resolve("xml"));
-        Files.createFile(xmlDir.resolve("log4j.properties"));
+        Files.createFile(xmlDir.resolve("log4j2.properties"));
 
         zapInstallDir = installDir.toAbsolutePath().toString();
         zapHomeDir = Files.createDirectory(tempDir.resolve("home")).toAbsolutePath().toString();
-    }
-
-    /** Sets up the log to ease debugging. */
-    protected void setUpLog() {
-        // Useful if you need to get some info when debugging
-        BasicConfigurator.configure();
-        ConsoleAppender ca = new ConsoleAppender();
-        ca.setWriter(new OutputStreamWriter(System.out));
-        ca.setLayout(new PatternLayout("%-5p [%t]: %m%n"));
-        Logger.getRootLogger().addAppender(ca);
-        Logger.getRootLogger().setLevel(Level.DEBUG);
     }
 
     /**
@@ -440,7 +417,7 @@ public abstract class TestUtils {
      * @return a {@code TechSet} without the given technologies.
      */
     protected TechSet techSetWithout(Tech... techs) {
-        TechSet techSet = new TechSet(TechSet.AllTech);
+        TechSet techSet = new TechSet(TechSet.getAllTech());
         if (techs == null || techs.length == 0) {
             return techSet;
         }
@@ -464,7 +441,7 @@ public abstract class TestUtils {
 
         List<Tech> techsWithParent = new ArrayList<>();
         List<Tech> techList = Arrays.asList(techs);
-        for (Tech tech : Tech.builtInTech) {
+        for (Tech tech : Tech.getAll()) {
             Tech parentTech = tech.getParent();
             if (parentTech != null && techList.contains(parentTech)) {
                 techsWithParent.add(tech);

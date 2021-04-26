@@ -7,7 +7,7 @@ plugins {
 
 group = "org.zaproxy.addon"
 
-version = "13.1.0"
+version = "13.2.0"
 description = "Advanced fuzzer for manual testing"
 
 tasks.withType<JavaCompile> {
@@ -17,7 +17,7 @@ tasks.withType<JavaCompile> {
 zapAddOn {
     addOnName.set("Fuzzer")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.9.0")
+    zapVersion.set("2.10.0")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -31,8 +31,7 @@ dependencies {
         // Only "jbrofuzz-core" is needed.
         setTransitive(false)
     }
-    implementation(files("lib/generex-0.0.5-SNAPSHOT.jar"))
-    implementation("dk.brics.automaton:automaton:1.11-8")
+    implementation("com.github.mifmif:generex:1.0.2")
 
     testImplementation(project(":testutils"))
 }

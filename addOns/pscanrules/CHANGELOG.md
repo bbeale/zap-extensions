@@ -4,11 +4,54 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
-### Changes
+### Changed
+- Cache-control scan rule no longer checks if Pragma is set or not.
+- Maintenance changes.
+- The Timestamp Disclosure scan rule now excludes values in "Report-To" or "NEL" headers (Issue 6493).
+- The Timestamp Disclosure scan rule no longer considers font type requests or responses when looking for possible timestamps (Issue 6274).
+- X-Frame-Options scan rule CWE ID changed from 16 to 1021.
+- Discontinued use of CWE-16 and switched to more specific weaknesses in the following scan rules:
+  - Character Set Mismatch
+  - Content Security Policy
+  - Cookie HttpOnly
+  - Cookie SameSite
+  - JSF ViewState
+  - MS ViewState
+  - X-Content-Type-Options
+
+## [33] - 2021-01-29
+### Added
+- Added Express error string pattern (Issue 6412).
+- Added sort to form field names that are displayed in Anti-CSRF alert other info field, duplicate names (arrays) are combined and not repeated.
+
+### Changed
+- X-Frame-Options (XFO) scan rule no longer suggests the use of "ALLOW-FROM", and also includes CSP "frame-ancestors" as an alternative.
+  - XFO headers implementing "ALLOW-FROM" will now be considered malformed.
+- The Suspicious Comments scan rule will raise one alert per pattern per page and use more suitable evidence.
+
+## [32] - 2021-01-20
+### Changed
+- The Suspicious Comments scan rule will include the offending line as evidence.
+- The Suspicious Comments scan rule will raise one alert per finding, instead of one aggeregated alert per HTTP message.
+
+## [31] - 2020-12-15
+### Changed
+- Now targeting ZAP 2.10.
+- The following scan rules now support Custom Page definitions:
+  - Application Error
+  - Cache Control
+  - X-Content-Type-Options
+  - X-Frame-Options
+
+## [30] - 2020-11-26
+### Changed
 - The CSP scan rule now checks if the form-action directive allows wildcards.
 - The CSP scan rule now includes further information in the description of allowed wildcard directives alerts when the impacted directive is one (or more) which doesn't fallback to default-src.
 - Maintenance changes.
-- Changed ViewState and XFrameOption rules to return example alerts for the docs
+- Changed ViewState and XFrameOption rules to return example alerts for the docs.
+- Handle an IllegalArgumentException that could occur in the CSP scan rule if multiple CSP headers were present and one (or more) had a report-uri directive when trying to merge them.
+- Allow to ignore cookies in same site and loosely scoped scan rules.
+- The Application Error scan rule will not alert on web assembly responses.
 
 ## [29] - 2020-06-01
 ### Changed
@@ -195,6 +238,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[33]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v33
+[32]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v32
+[31]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v31
+[30]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v30
 [29]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v29
 [28]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v28
 [27]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v27

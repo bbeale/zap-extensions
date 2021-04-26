@@ -10,6 +10,12 @@ Active Scan Rules
 <H1>Active Scan Rules</H1>
 The following release quality active scan rules are included in this add-on:
 
+<H2>.htaccess Information Leak</H2>
+Checks for web accessible .htaccess files which may leak sensitive information 
+(such as usernames, error handling, redirects, directory listing settings, etc.).
+<p>
+Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/ascanrules/src/main/java/org/zaproxy/zap/extension/ascanrules/HtAccessScanRule.java">HtAccessScanRule.java</a>
+
 <H2>Buffer Overflow</H2>
 
 Looks for indicators of buffer overflows in compiled code.  It does this by putting out large strings of input text and look for code crash
@@ -79,6 +85,15 @@ and other web server software.
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/ascanrules/src/main/java/org/zaproxy/zap/extension/ascanrules/DirectoryBrowsingScanRule.java">DirectoryBrowsingScanRule.java</a>
 
+<H2>ELMAH Information Leak</H2>
+Tests to see if the Error Logging Modules and Handlers (elmah.axd) HTTP Module is available. Although this module is handy for
+developers and other stakeholders it can also leak a significant amount of information which a security analyst or malicious individual
+may be interested in.<br><br>
+The ELMAH scan rule targets Microsoft based technologies: IIS, Windows, ASP, and MSSQL.<br>
+Files are only reported if they contain the text "Error Log for" unless a LOW alert threshold is set.
+<p>
+Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/ascanrules/src/main/java/org/zaproxy/zap/extension/ascanrules/ElmahScanRule.java">ElmahScanRule.java</a>
+
 <H2>External Redirect</H2>
 
 This rule submits a variety of URL redirect strings as parameter values in a request, then examines the headers and bodies of responses to determine
@@ -109,6 +124,8 @@ and local file targets for Windows and *NIX systems as well as Java servlets. If
 current target file an alert is raised and the scanner returns immediately. If none of the common local file targets succeed, path traversal is 
 attempted using the filename in the URL. As long as submitting an arbitrary filename does not return an OK status code but the real filename does, an alert is raised
 and the scanner returns immediately.
+<p>
+Note: This scan rule has one check that is excluded at High Alert Threshold.
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/master/addOns/ascanrules/src/main/java/org/zaproxy/zap/extension/ascanrules/PathTraversalScanRule.java">PathTraversalScanRule.java</a>
 

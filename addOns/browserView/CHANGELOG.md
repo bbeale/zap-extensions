@@ -8,8 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add info and repo URLs.
 
 ### Changed
-- Update minimum ZAP version to 2.9.0.
+- Update minimum ZAP version to 2.10.0.
 - Maintenance changes.
+- Make missing JavaFX logging less verbose in regular use.
 
 ## 5 - 2017-07-21
 

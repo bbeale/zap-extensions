@@ -25,7 +25,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.AbstractAppParamPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
@@ -49,13 +50,13 @@ public class ExampleFileActiveScanRule extends AbstractAppParamPlugin {
 
     private static final String exampleAscanFile = "txt/example-ascan-file.txt";
     private List<String> strings = null;
-    private static Logger log = Logger.getLogger(ExampleFileActiveScanRule.class);
+    private static Logger log = LogManager.getLogger(ExampleFileActiveScanRule.class);
 
     @Override
     public int getId() {
         /*
          * This should be unique across all active and passive rules.
-         * The master list is https://github.com/zaproxy/zaproxy/blob/develop/docs/scanners.md
+         * The master list is https://github.com/zaproxy/zaproxy/blob/main/docs/scanners.md
          */
         return 60101;
     }
@@ -146,9 +147,9 @@ public class ExampleFileActiveScanRule extends AbstractAppParamPlugin {
                 }
                 String attack = this.strings.get(i);
                 // Always use getNewMsg() for each new request
-                msg = getNewMsg();
-                setParameter(msg, param, attack);
-                sendAndReceive(msg);
+                HttpMessage testMsg = getNewMsg();
+                setParameter(testMsg, param, attack);
+                sendAndReceive(testMsg);
 
                 // This is where you detect potential vulnerabilities in the response
                 String evidence;
@@ -160,7 +161,7 @@ public class ExampleFileActiveScanRule extends AbstractAppParamPlugin {
                             .setAttack(attack)
                             .setOtherInfo(getOtherInfo())
                             .setEvidence(evidence)
-                            .setMessage(msg)
+                            .setMessage(testMsg)
                             .raise();
                     return;
                 }
@@ -201,7 +202,7 @@ public class ExampleFileActiveScanRule extends AbstractAppParamPlugin {
         BufferedReader reader = null;
         File f = new File(Constant.getZapHome() + File.separator + file);
         if (!f.exists()) {
-            log.error("No such file: " + f.getAbsolutePath());
+            log.error("No such file: {}", f.getAbsolutePath());
             return strings;
         }
         try {
@@ -213,13 +214,13 @@ public class ExampleFileActiveScanRule extends AbstractAppParamPlugin {
                 }
             }
         } catch (IOException e) {
-            log.error("Error on opening/reading example error file. Error: " + e.getMessage(), e);
+            log.error("Error on opening/reading example error file. Error: {}", e.getMessage(), e);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    log.debug("Error on closing the file reader. Error: " + e.getMessage(), e);
+                    log.debug("Error on closing the file reader. Error: {}", e.getMessage(), e);
                 }
             }
         }

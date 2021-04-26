@@ -21,11 +21,14 @@ package org.zaproxy.addon.graphql;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.httpclient.URIException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.CommandLine;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
@@ -38,6 +41,11 @@ import org.parosproxy.paros.extension.SessionChangedListener;
 import org.parosproxy.paros.model.Session;
 import org.parosproxy.paros.network.HttpSender;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
+import org.zaproxy.zap.extension.script.ExtensionScript;
+import org.zaproxy.zap.extension.script.ScriptEngineWrapper;
+import org.zaproxy.zap.extension.script.ScriptType;
+import org.zaproxy.zap.extension.script.ScriptWrapper;
 import org.zaproxy.zap.extension.spider.ExtensionSpider;
 import org.zaproxy.zap.spider.filters.ParseFilter;
 import org.zaproxy.zap.spider.parser.SpiderParser;
@@ -47,7 +55,7 @@ public class ExtensionGraphQl extends ExtensionAdaptor
         implements CommandLineListener, SessionChangedListener {
 
     public static final String NAME = "ExtensionGraphQl";
-    private static final Logger LOG = Logger.getLogger(ExtensionGraphQl.class);
+    private static final Logger LOG = LogManager.getLogger(ExtensionGraphQl.class);
 
     private ZapMenuItem menuImportLocalGraphQl = null;
     private ZapMenuItem menuImportUrlGraphQl = null;
@@ -89,10 +97,20 @@ public class ExtensionGraphQl extends ExtensionAdaptor
             extensionHook.getHookView().addOptionPanel(getGraphQlOptionsPanel());
         }
 
-        extensionHook.addApiImplementor(new GraphQlApi());
+        extensionHook.addApiImplementor(new GraphQlApi(getParam()));
         extensionHook.addOptionsParamSet(getParam());
         extensionHook.addCommandLine(getCommandLineArguments());
         extensionHook.addSessionListener(this);
+    }
+
+    @Override
+    public void postInit() {
+        super.postInit();
+        try {
+            addScript();
+        } catch (IOException e) {
+            LOG.warn("Could not add GraphQL Input Vectors script.");
+        }
     }
 
     @Override
@@ -157,12 +175,53 @@ public class ExtensionGraphQl extends ExtensionAdaptor
         synchronized (parserThreads) {
             for (ParserThread thread : parserThreads) {
                 if (thread.isRunning()) {
-                    LOG.debug("Stopping Thread " + thread.getName());
+                    LOG.debug("Stopping Thread {}", thread.getName());
                     thread.stopParser();
                 }
             }
         }
         parserThreads.clear();
+    }
+
+    private void addScript() throws IOException {
+        ExtensionScript extScript =
+                Control.getSingleton().getExtensionLoader().getExtension(ExtensionScript.class);
+        String scriptName = "GraphQL Support.js";
+        if (extScript != null && extScript.getScript(scriptName) == null) {
+            ScriptType variantType =
+                    extScript.getScriptType(ExtensionActiveScan.SCRIPT_TYPE_VARIANT);
+            ScriptEngineWrapper engine = getEngine(extScript, "Oracle Nashorn");
+            if (variantType != null && engine != null) {
+                File scriptPath =
+                        Paths.get(
+                                        Constant.getZapHome(),
+                                        ExtensionScript.SCRIPTS_DIR,
+                                        ExtensionScript.SCRIPTS_DIR,
+                                        ExtensionActiveScan.SCRIPT_TYPE_VARIANT,
+                                        scriptName)
+                                .toFile();
+                ScriptWrapper script =
+                        new ScriptWrapper(
+                                scriptName,
+                                Constant.messages.getString("graphql.script.description"),
+                                engine,
+                                variantType,
+                                true,
+                                scriptPath);
+                script.setLoadOnStart(true);
+                script.reloadScript();
+                extScript.addScript(script, false);
+            }
+        }
+    }
+
+    private static ScriptEngineWrapper getEngine(ExtensionScript ext, String engineName) {
+        try {
+            return ext.getEngineWrapper(engineName);
+        } catch (InvalidParameterException e) {
+            LOG.warn("The {} engine was not found, script variant will not be added.", engineName);
+        }
+        return null;
     }
 
     @Override
@@ -236,7 +295,8 @@ public class ExtensionGraphQl extends ExtensionAdaptor
                 parser =
                         new GraphQlParser(
                                 args[ARG_END_URL_IDX].getArguments().firstElement(),
-                                HttpSender.MANUAL_REQUEST_INITIATOR);
+                                HttpSender.MANUAL_REQUEST_INITIATOR,
+                                true);
                 parser.addRequesterListener(new HistoryPersister());
             } catch (URIException e) {
                 CommandLine.error(
@@ -264,7 +324,8 @@ public class ExtensionGraphQl extends ExtensionAdaptor
                 GraphQlParser parser =
                         new GraphQlParser(
                                 args[ARG_END_URL_IDX].getArguments().firstElement(),
-                                HttpSender.MANUAL_REQUEST_INITIATOR);
+                                HttpSender.MANUAL_REQUEST_INITIATOR,
+                                true);
                 parser.addRequesterListener(new HistoryPersister());
                 parser.introspect();
             } catch (IOException e) {

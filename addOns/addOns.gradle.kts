@@ -10,7 +10,7 @@ import org.zaproxy.gradle.addon.misc.ExtractLatestChangesFromChangelog
 
 plugins {
     jacoco
-    id("org.zaproxy.add-on") version "0.4.0" apply false
+    id("org.zaproxy.add-on") version "0.5.0" apply false
 }
 
 description = "Common configuration of the add-ons."
@@ -48,7 +48,14 @@ subprojects {
         }
     }
 
-    val apiGenClasspath = configurations.detachedConfiguration(dependencies.create("org.zaproxy:zap:2.9.0"))
+    configurations {
+        "compileClasspath" {
+            exclude(group = "log4j")
+            exclude(group = "org.apache.logging.log4j", module = "log4j-1.2-api")
+        }
+    }
+
+    val apiGenClasspath = configurations.detachedConfiguration(dependencies.create("org.zaproxy:zap:2.10.0"))
 
     zapAddOn {
         releaseLink.set(project.provider { "https://github.com/zaproxy/zap-extensions/releases/${zapAddOn.addOnId.get()}-v@CURRENT_VERSION@" })

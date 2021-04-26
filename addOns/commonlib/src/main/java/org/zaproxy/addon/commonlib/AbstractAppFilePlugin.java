@@ -22,7 +22,8 @@ package org.zaproxy.addon.commonlib;
 import java.io.IOException;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.AbstractAppPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
@@ -39,7 +40,7 @@ import org.parosproxy.paros.network.HttpStatusCode;
  */
 public abstract class AbstractAppFilePlugin extends AbstractAppPlugin {
 
-    private static final Logger LOG = Logger.getLogger(AbstractAppFilePlugin.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractAppFilePlugin.class);
     private final String filename;
     private final String messagePrefix;
 
@@ -50,7 +51,7 @@ public abstract class AbstractAppFilePlugin extends AbstractAppPlugin {
      * resource bundle ({@link Constant#messages}).
      *
      * @param filename the name of the file to check if it's present.
-     * @param messagePrefix the messages prefix.
+     * @param messagePrefix the messages prefix (including the trailing period).
      */
     protected AbstractAppFilePlugin(String filename, String messagePrefix) {
         this.filename = filename;
@@ -106,9 +107,7 @@ public abstract class AbstractAppFilePlugin extends AbstractAppPlugin {
         // Check if the user stopped things. One request per URL so check before
         // sending the request
         if (isStop()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Scanner " + getName() + " Stopping.");
-            }
+            LOG.debug("Scanner {} Stopping.", getName());
             return;
         }
 
@@ -128,27 +127,21 @@ public abstract class AbstractAppFilePlugin extends AbstractAppPlugin {
                             baseUri.getPort(),
                             createTestablePath(baseUriPath));
         } catch (URIException uEx) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "An error occurred creating a URI for the: "
-                                + getName()
-                                + " scanner. "
-                                + uEx.getMessage(),
-                        uEx);
-            }
+            LOG.debug(
+                    "An error occurred creating a URI for the: {} scanner. {}",
+                    getName(),
+                    uEx.getMessage(),
+                    uEx);
             return;
         }
         try {
             newRequest.getRequestHeader().setURI(newUri);
         } catch (URIException uEx) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                        "An error occurred setting the URI for a new request used by: "
-                                + getName()
-                                + " scanner. "
-                                + uEx.getMessage(),
-                        uEx);
-            }
+            LOG.debug(
+                    "An error occurred setting the URI for a new request used by: {} scanner. {}",
+                    getName(),
+                    uEx.getMessage(),
+                    uEx);
             return;
         }
         // Until https://github.com/zaproxy/zaproxy/issues/3563 is addressed
@@ -164,23 +157,19 @@ public abstract class AbstractAppFilePlugin extends AbstractAppPlugin {
             sendAndReceive(newRequest, false);
         } catch (IOException e) {
             LOG.warn(
-                    "An error occurred while checking ["
-                            + newRequest.getRequestHeader().getMethod()
-                            + "] ["
-                            + newRequest.getRequestHeader().getURI()
-                            + "] for "
-                            + getName()
-                            + " Caught "
-                            + e.getClass().getName()
-                            + " "
-                            + e.getMessage());
-            return;
-        }
-        if (isFalsePositive(newRequest)) {
+                    "An error occurred while checking [{}] [{}] for {} Caught {} {}",
+                    newRequest.getRequestHeader().getMethod(),
+                    newRequest.getRequestHeader().getURI().toString(),
+                    getName(),
+                    e.getClass().getName(),
+                    e.getMessage());
             return;
         }
         int statusCode = newRequest.getResponseHeader().getStatusCode();
         if (statusCode == HttpStatusCode.OK) {
+            if (isFalsePositive(newRequest)) {
+                return;
+            }
             raiseAlert(newRequest, getRisk(), Alert.CONFIDENCE_MEDIUM, "");
         } else if (this.getAlertThreshold().equals(AlertThreshold.LOW)
                 && (statusCode == HttpStatusCode.UNAUTHORIZED
@@ -221,5 +210,9 @@ public abstract class AbstractAppFilePlugin extends AbstractAppPlugin {
                 .setEvidence(msg.getResponseHeader().getPrimeHeader())
                 .setMessage(msg)
                 .raise();
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }

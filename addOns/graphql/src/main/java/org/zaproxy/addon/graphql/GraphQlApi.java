@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.URIException;
-import org.apache.log4j.Logger;
 import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.extension.api.ApiAction;
 import org.zaproxy.zap.extension.api.ApiException;
@@ -40,8 +39,6 @@ public class GraphQlApi extends ApiImplementor {
     private static final String PARAM_URL = "url";
     private static final String PARAM_ENDPOINT = "endurl";
 
-    private static final Logger LOG = Logger.getLogger(GraphQlApi.class);
-
     public GraphQlApi() {
         this.addApiAction(
                 new ApiAction(ACTION_IMPORT_FILE, new String[] {PARAM_ENDPOINT, PARAM_FILE}));
@@ -50,6 +47,16 @@ public class GraphQlApi extends ApiImplementor {
                         ACTION_IMPORT_URL,
                         new String[] {PARAM_ENDPOINT},
                         new String[] {PARAM_URL}));
+    }
+
+    /**
+     * Constructs a {@code GraphQlApi} with the given {@code options} exposed through the API.
+     *
+     * @param options the options that will be exposed through the API.
+     */
+    public GraphQlApi(GraphQlParam options) {
+        this();
+        addApiOptions(options);
     }
 
     @Override
@@ -77,7 +84,9 @@ public class GraphQlApi extends ApiImplementor {
         try {
             GraphQlParser parser =
                     new GraphQlParser(
-                            params.getString(PARAM_ENDPOINT), HttpSender.MANUAL_REQUEST_INITIATOR);
+                            params.getString(PARAM_ENDPOINT),
+                            HttpSender.MANUAL_REQUEST_INITIATOR,
+                            true);
             parser.importFile(params.getString(PARAM_FILE));
         } catch (URIException e) {
             throw new ApiException(ApiException.Type.ILLEGAL_PARAMETER, e.getMessage());
@@ -92,7 +101,9 @@ public class GraphQlApi extends ApiImplementor {
         try {
             GraphQlParser parser =
                     new GraphQlParser(
-                            params.getString(PARAM_ENDPOINT), HttpSender.MANUAL_REQUEST_INITIATOR);
+                            params.getString(PARAM_ENDPOINT),
+                            HttpSender.MANUAL_REQUEST_INITIATOR,
+                            true);
             parser.addRequesterListener(new HistoryPersister());
             if (params.optString(PARAM_URL, "").isEmpty()) {
                 parser.introspect();

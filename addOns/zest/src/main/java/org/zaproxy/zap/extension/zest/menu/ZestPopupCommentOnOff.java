@@ -21,21 +21,22 @@ package org.zaproxy.zap.extension.zest.menu;
 
 import java.awt.Component;
 import java.util.List;
-import org.apache.log4j.Logger;
-import org.mozilla.zest.core.v1.ZestScript;
-import org.mozilla.zest.core.v1.ZestStatement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.ExtensionPopupMenuItem;
 import org.zaproxy.zap.extension.script.ScriptNode;
 import org.zaproxy.zap.extension.zest.ExtensionZest;
 import org.zaproxy.zap.extension.zest.ZestZapUtils;
+import org.zaproxy.zest.core.v1.ZestScript;
+import org.zaproxy.zest.core.v1.ZestStatement;
 
 /** ZAP: New Popup Menu Alert Delete */
 public class ZestPopupCommentOnOff extends ExtensionPopupMenuItem {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger logger = Logger.getLogger(ZestPopupCommentOnOff.class);
+    private static final Logger logger = LogManager.getLogger(ZestPopupCommentOnOff.class);
 
     private ExtensionZest extension = null;
     private boolean comment = false;

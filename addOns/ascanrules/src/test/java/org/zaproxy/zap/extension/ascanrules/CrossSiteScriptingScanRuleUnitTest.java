@@ -47,7 +47,7 @@ import org.zaproxy.zap.testutils.NanoServerHandler;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
 
 public class CrossSiteScriptingScanRuleUnitTest
-        extends ActiveScannerAppParamTest<CrossSiteScriptingScanRule> {
+        extends ActiveScannerTest<CrossSiteScriptingScanRule> {
 
     @Override
     protected CrossSiteScriptingScanRule createScanner() {
@@ -1181,6 +1181,70 @@ public class CrossSiteScriptingScanRuleUnitTest
                 equalTo("%253Cscript%253Ealert%25281%2529%253B%253C%252Fscript%253E"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    public void shouldNotAlertXssInJsVariableWithEncoding() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        this.nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String response;
+                        if (name != null) {
+                            name = name.replaceAll("\"", "&quot;");
+                            response =
+                                    getHtml("InputInScript.html", new String[][] {{"name", name}});
+                        } else {
+                            response = getHtml("NoInput.html");
+                        }
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = this.getHttpMessage(path + "?name=test");
+        this.rule.init(msg, this.parent);
+
+        // When
+        this.rule.scan();
+
+        // Then
+        assertThat(alertsRaised.size(), equalTo(0));
+    }
+
+    @Test
+    public void shouldAlertOnceWithMultipleContexts() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/api/search";
+        this.nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String response;
+                        if (name != null) {
+                            response =
+                                    getHtml("MultipleInput.html", new String[][] {{"name", name}});
+                        } else {
+                            response = getHtml("NoInput.html");
+                        }
+
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = this.getHttpMessage(path + "?name=test");
+        this.rule.init(msg, this.parent);
+
+        // When
+        this.rule.scan();
+
+        // Then
+        assertThat(alertsRaised.size(), equalTo(1));
     }
 
     @Override

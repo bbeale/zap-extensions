@@ -20,7 +20,6 @@
 package org.zaproxy.zap.extension.scripts;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.EventQueue;
 import javax.script.ScriptException;
 import javax.swing.ImageIcon;
@@ -29,7 +28,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.text.DefaultCaret;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.zaproxy.zap.utils.DisplayUtils;
@@ -40,7 +40,7 @@ import org.zaproxy.zap.view.ZapToggleButton;
 public class OutputPanel extends AbstractPanel {
 
     private static final long serialVersionUID = -947074835463140074L;
-    private static final Logger logger = Logger.getLogger(OutputPanel.class);
+    private static final Logger logger = LogManager.getLogger(OutputPanel.class);
 
     private static final ImageIcon CLEAR_ICON =
             new ImageIcon(
@@ -74,11 +74,7 @@ public class OutputPanel extends AbstractPanel {
     public OutputPanel(ExtensionScriptsUI extension) {
         super();
         this.extension = extension;
-        initialize();
-    }
 
-    /** This method initializes this */
-    private void initialize() {
         this.setLayout(new BorderLayout());
         this.setName("ConsoleOutputPanel");
         this.add(getMainPanel(), BorderLayout.CENTER);
@@ -217,7 +213,7 @@ public class OutputPanel extends AbstractPanel {
             return;
         }
         try {
-            EventQueue.invokeAndWait(
+            EventQueue.invokeLater(
                     new Runnable() {
                         @Override
                         public void run() {
@@ -274,7 +270,6 @@ public class OutputPanel extends AbstractPanel {
 
     public void clear() {
         getTxtOutput().setText("");
-        getTxtOutput().setForeground(Color.BLACK);
     }
 
     public boolean isEmpty() {

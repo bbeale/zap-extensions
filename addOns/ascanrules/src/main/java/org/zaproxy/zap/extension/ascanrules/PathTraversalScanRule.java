@@ -31,14 +31,14 @@ import org.apache.commons.httpclient.InvalidRedirectLocationException;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.AbstractAppParamPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Category;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.network.HttpStatusCode;
 import org.zaproxy.zap.model.Tech;
 import org.zaproxy.zap.model.Vulnerabilities;
 import org.zaproxy.zap.model.Vulnerability;
@@ -174,7 +174,7 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
      */
     private static final Vulnerability vuln = Vulnerabilities.getVulnerability("wasc_33");
 
-    private static final Logger log = Logger.getLogger(PathTraversalScanRule.class);
+    private static final Logger log = LogManager.getLogger(PathTraversalScanRule.class);
 
     @Override
     public int getId() {
@@ -223,6 +223,10 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
         return "Failed to load vulnerability reference from file";
     }
 
+    /**
+     * <strong>NOTE:</strong> If the checks are re-ordered please do not change the "check #"
+     * identifiers. These help with troubleshooting and are included in alert Other Info.
+     */
     @Override
     public void scan(HttpMessage msg, String param, String value) {
 
@@ -236,7 +240,7 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
             boolean includeNullByteInjectionPayload = false;
             // DEBUG only
             if (log.isDebugEnabled()) {
-                log.debug("Attacking at Attack Strength: " + this.getAttackStrength());
+                log.debug("Attacking at Attack Strength: {}", this.getAttackStrength());
             }
 
             switch (this.getAttackStrength()) {
@@ -283,16 +287,11 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                     // Default to off
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug(
-                        "Checking ["
-                                + getBaseMsg().getRequestHeader().getMethod()
-                                + "] ["
-                                + getBaseMsg().getRequestHeader().getURI()
-                                + "], parameter ["
-                                + param
-                                + "] for Path Traversal to local files");
-            }
+            log.debug(
+                    "Checking [{}] [{}], parameter [{}] for Path Traversal to local files",
+                    getBaseMsg().getRequestHeader().getMethod(),
+                    getBaseMsg().getRequestHeader().getURI(),
+                    param);
 
             // Check 1: Start detection for Windows patterns
             // note that depending on the AttackLevel, the number of prefixes that we will try
@@ -303,7 +302,7 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
 
                     // Check if a there was a finding or the scan has been stopped
                     // if yes dispose resources and exit
-                    if (sendAndCheckPayload(param, WIN_LOCAL_FILE_TARGETS[h], WIN_PATTERN)
+                    if (sendAndCheckPayload(param, WIN_LOCAL_FILE_TARGETS[h], WIN_PATTERN, 1)
                             || isStop()) {
                         // Dispose all resources
                         // Exit the scan rule
@@ -315,7 +314,8 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                         if (sendAndCheckPayload(
                                         param,
                                         WIN_LOCAL_FILE_TARGETS[h] + NULL_BYTE_CHARACTER,
-                                        WIN_PATTERN)
+                                        WIN_PATTERN,
+                                        1)
                                 || isStop()) {
                             return;
                         }
@@ -325,7 +325,8 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                                             WIN_LOCAL_FILE_TARGETS[h]
                                                     + NULL_BYTE_CHARACTER
                                                     + extension,
-                                            WIN_PATTERN)
+                                            WIN_PATTERN,
+                                            1)
                                     || isStop()) {
                                 return;
                             }
@@ -343,7 +344,7 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
 
                     // Check if a there was a finding or the scan has been stopped
                     // if yes dispose resources and exit
-                    if (sendAndCheckPayload(param, NIX_LOCAL_FILE_TARGETS[h], NIX_PATTERN)
+                    if (sendAndCheckPayload(param, NIX_LOCAL_FILE_TARGETS[h], NIX_PATTERN, 2)
                             || isStop()) {
                         // Dispose all resources
                         // Exit the scan rule
@@ -355,7 +356,8 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                         if (sendAndCheckPayload(
                                         param,
                                         NIX_LOCAL_FILE_TARGETS[h] + NULL_BYTE_CHARACTER,
-                                        NIX_PATTERN)
+                                        NIX_PATTERN,
+                                        2)
                                 || isStop()) {
                             return;
                         }
@@ -366,7 +368,8 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                                             NIX_LOCAL_FILE_TARGETS[h]
                                                     + NULL_BYTE_CHARACTER
                                                     + extension,
-                                            NIX_PATTERN)
+                                            NIX_PATTERN,
+                                            2)
                                     || isStop()) {
                                 return;
                             }
@@ -383,7 +386,7 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
 
                 // Check if a there was a finding or the scan has been stopped
                 // if yes dispose resources and exit
-                if (sendAndCheckPayload(param, LOCAL_DIR_TARGETS[h], DIR_PATTERN) || isStop()) {
+                if (sendAndCheckPayload(param, LOCAL_DIR_TARGETS[h], DIR_PATTERN, 3) || isStop()) {
                     // Dispose all resources
                     // Exit the scan rule
                     return;
@@ -411,10 +414,10 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
 
                     // Check if a there was a finding or the scan has been stopped
                     // if yes dispose resources and exit
-                    if (sendAndCheckPayload(param, sslashPattern, WAR_PATTERN)
-                            || sendAndCheckPayload(param, bslashPattern, WAR_PATTERN)
-                            || sendAndCheckPayload(param, '/' + sslashPattern, WAR_PATTERN)
-                            || sendAndCheckPayload(param, '\\' + bslashPattern, WAR_PATTERN)
+                    if (sendAndCheckPayload(param, sslashPattern, WAR_PATTERN, 4)
+                            || sendAndCheckPayload(param, bslashPattern, WAR_PATTERN, 4)
+                            || sendAndCheckPayload(param, '/' + sslashPattern, WAR_PATTERN, 4)
+                            || sendAndCheckPayload(param, '\\' + bslashPattern, WAR_PATTERN, 4)
                             || isStop()) {
 
                         // Dispose all resources
@@ -427,123 +430,113 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                 }
             }
 
-            // Check 5: try a local file Path Traversal on the file name of the URL (which obviously
-            // will not be in the target list above).
-            // first send a query for a random parameter value, and see if we get a 200 back
-            // if 200 is returned, abort this check (on the url filename itself), because it would
-            // be unreliable.
-            // if we know that a random query returns <> 200, then a 200 response likely means
-            // something!
-            // this logic is all about avoiding false positives, while still attempting to match on
-            // actual vulnerabilities
-            msg = getNewMsg();
-            setParameter(msg, param, NON_EXISTANT_FILENAME);
+            if (getAlertThreshold().equals(AlertThreshold.LOW)
+                    || getAlertThreshold().equals(AlertThreshold.MEDIUM)) {
+                // Check 5: try a local file Path Traversal on the file name of the URL (which
+                // obviously will not be in the target list above).
+                // first send a query for a random parameter value, and see if we get a 200 back
+                // if 200 is returned, abort this check (on the url filename itself), because it
+                // would be unreliable.
+                // if we know that a random query returns <> 200, then a 200 response likely means
+                // something!
+                // this logic is all about avoiding false positives, while still attempting to match
+                // on actual vulnerabilities
+                msg = getNewMsg();
+                setParameter(msg, param, NON_EXISTANT_FILENAME);
 
-            // send the modified message (with a hopefully non-existent filename), and see what we
-            // get back
-            try {
-                sendAndReceive(msg);
+                // send the modified message (with a hopefully non-existent filename), and see what
+                // we get back
+                try {
+                    sendAndReceive(msg);
 
-            } catch (SocketException
-                    | IllegalStateException
-                    | UnknownHostException
-                    | IllegalArgumentException
-                    | InvalidRedirectLocationException
-                    | URIException ex) {
-                if (log.isDebugEnabled()) {
+                } catch (SocketException
+                        | IllegalStateException
+                        | UnknownHostException
+                        | IllegalArgumentException
+                        | InvalidRedirectLocationException
+                        | URIException ex) {
                     log.debug(
-                            "Caught "
-                                    + ex.getClass().getName()
-                                    + " "
-                                    + ex.getMessage()
-                                    + " when accessing: "
-                                    + msg.getRequestHeader().getURI().toString());
+                            "Caught {} {} when accessing: {}",
+                            ex.getClass().getName(),
+                            ex.getMessage(),
+                            msg.getRequestHeader().getURI());
+
+                    return; // Something went wrong, no point continuing
                 }
 
-                return; // Something went wrong, no point continuing
-            }
+                // do some pattern matching on the results.
+                Pattern errorPattern = Pattern.compile("Exception|Error");
+                Matcher errorMatcher = errorPattern.matcher(msg.getResponseBody().toString());
 
-            // do some pattern matching on the results.
-            Pattern errorPattern = Pattern.compile("Exception|Error");
-            Matcher errorMatcher = errorPattern.matcher(msg.getResponseBody().toString());
+                String urlfilename = msg.getRequestHeader().getURI().getName();
 
-            String urlfilename = msg.getRequestHeader().getURI().getName();
+                // url file name may be empty, i.e. there is no file name for next check
+                if (!StringUtils.isEmpty(urlfilename) && (!isPage200(msg) || errorMatcher.find())) {
 
-            // url file name may be empty, i.e. there is no file name for next check
-            if (!StringUtils.isEmpty(urlfilename)
-                    && (msg.getResponseHeader().getStatusCode() != HttpStatusCode.OK
-                            || errorMatcher.find())) {
-
-                if (log.isDebugEnabled()) {
                     log.debug(
-                            "It is possible to check for local file Path Traversal on the url filename on ["
-                                    + msg.getRequestHeader().getMethod()
-                                    + "] ["
-                                    + msg.getRequestHeader().getURI()
-                                    + "], ["
-                                    + param
-                                    + "]");
-                }
+                            "It is possible to check for local file Path Traversal on the url filename on [{}] [{}], [{}]",
+                            msg.getRequestHeader().getMethod(),
+                            msg.getRequestHeader().getURI(),
+                            param);
 
-                String prefixedUrlfilename;
+                    String prefixedUrlfilename;
 
-                // for the url filename, try each of the prefixes in turn
-                for (String prefix : LOCAL_FILE_RELATIVE_PREFIXES) {
+                    // for the url filename, try each of the prefixes in turn
+                    for (String prefix : LOCAL_FILE_RELATIVE_PREFIXES) {
 
-                    prefixedUrlfilename = prefix + urlfilename;
-                    msg = getNewMsg();
-                    setParameter(msg, param, prefixedUrlfilename);
+                        prefixedUrlfilename = prefix + urlfilename;
+                        msg = getNewMsg();
+                        setParameter(msg, param, prefixedUrlfilename);
 
-                    // send the modified message (with the url filename), and see what we get back
-                    try {
-                        sendAndReceive(msg);
+                        // send the modified message (with the url filename), and see what we get
+                        // back
+                        try {
+                            sendAndReceive(msg);
 
-                    } catch (SocketException
-                            | IllegalStateException
-                            | UnknownHostException
-                            | IllegalArgumentException
-                            | InvalidRedirectLocationException
-                            | URIException ex) {
-                        if (log.isDebugEnabled()) {
+                        } catch (SocketException
+                                | IllegalStateException
+                                | UnknownHostException
+                                | IllegalArgumentException
+                                | InvalidRedirectLocationException
+                                | URIException ex) {
                             log.debug(
-                                    "Caught "
-                                            + ex.getClass().getName()
-                                            + " "
-                                            + ex.getMessage()
-                                            + " when accessing: "
-                                            + msg.getRequestHeader().getURI().toString());
+                                    "Caught {} {} when accessing: {}",
+                                    ex.getClass().getName(),
+                                    ex.getMessage(),
+                                    msg.getRequestHeader().getURI());
+
+                            continue; // Something went wrong, move to the next prefix in the loop
                         }
 
-                        continue; // Something went wrong, move to the next prefix in the loop
-                    }
+                        // did we get an Exception or an Error?
+                        errorMatcher = errorPattern.matcher(msg.getResponseBody().toString());
+                        if (isPage200(msg) && (!errorMatcher.find())) {
 
-                    // did we get an Exception or an Error?
-                    errorMatcher = errorPattern.matcher(msg.getResponseBody().toString());
-                    if ((msg.getResponseHeader().getStatusCode() == HttpStatusCode.OK)
-                            && (!errorMatcher.find())) {
+                            // if it returns OK, and the random string above did NOT return ok, then
+                            // raise an alert since the filename has likely been picked up and used
+                            // as a file name from the parameter
+                            newAlert()
+                                    .setConfidence(Alert.CONFIDENCE_LOW)
+                                    .setParam(param)
+                                    .setAttack(prefixedUrlfilename)
+                                    .setOtherInfo(
+                                            Constant.messages.getString(
+                                                    "ascanrules.pathtraversal.other", 5))
+                                    .setMessage(msg)
+                                    .raise();
 
-                        // if it returns OK, and the random string above did NOT return ok, then
-                        // raise an alert
-                        // since the filename has likely been picked up and used as a file name from
-                        // the parameter
-                        newAlert()
-                                .setConfidence(Alert.CONFIDENCE_MEDIUM)
-                                .setParam(param)
-                                .setAttack(prefixedUrlfilename)
-                                .setMessage(msg)
-                                .raise();
+                            // All done. No need to look for vulnerabilities on subsequent
+                            // parameters on the same request (to reduce performance impact)
+                            return;
+                        }
 
-                        // All done. No need to look for vulnerabilities on subsequent parameters
-                        // on the same request (to reduce performance impact)
-                        return;
-                    }
-
-                    // Check if the scan has been stopped
-                    // if yes dispose resources and exit
-                    if (isStop()) {
-                        // Dispose all resources
-                        // Exit the scan rule
-                        return;
+                        // Check if the scan has been stopped
+                        // if yes dispose resources and exit
+                        if (isStop()) {
+                            // Dispose all resources
+                            // Exit the scan rule
+                            return;
+                        }
                     }
                 }
             }
@@ -561,42 +554,32 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
 
         } catch (SocketTimeoutException ste) {
             log.warn(
-                    "A timeout occurred while checking ["
-                            + msg.getRequestHeader().getMethod()
-                            + "] ["
-                            + msg.getRequestHeader().getURI()
-                            + "], parameter ["
-                            + param
-                            + "] for Path Traversal. "
-                            + "The currently configured timeout is: "
-                            + Integer.toString(
-                                    Model.getSingleton()
-                                            .getOptionsParam()
-                                            .getConnectionParam()
-                                            .getTimeoutInSecs()));
+                    "A timeout occurred while checking [{}] [{}], parameter [{}] for Path Traversal. The currently configured timeout is: {}",
+                    msg.getRequestHeader().getMethod(),
+                    msg.getRequestHeader().getURI(),
+                    param,
+                    Integer.toString(
+                            Model.getSingleton()
+                                    .getOptionsParam()
+                                    .getConnectionParam()
+                                    .getTimeoutInSecs()));
 
-            if (log.isDebugEnabled()) {
-                log.debug("Caught " + ste.getClass().getName() + " " + ste.getMessage());
-            }
+            log.debug("Caught {} {}", ste.getClass().getName(), ste.getMessage());
 
         } catch (IOException e) {
             log.warn(
-                    "An error occurred while checking ["
-                            + msg.getRequestHeader().getMethod()
-                            + "] ["
-                            + msg.getRequestHeader().getURI()
-                            + "], parameter ["
-                            + param
-                            + "] for Path Traversal."
-                            + "Caught "
-                            + e.getClass().getName()
-                            + " "
-                            + e.getMessage());
+                    "An error occurred while checking [{}] [{}], parameter [{}] for Path Traversal.Caught {} {}",
+                    msg.getRequestHeader().getMethod(),
+                    msg.getRequestHeader().getURI(),
+                    param,
+                    e.getClass().getName(),
+                    e.getMessage());
         }
     }
 
     private boolean sendAndCheckPayload(
-            String param, String newValue, ContentsMatcher contentsMatcher) throws IOException {
+            String param, String newValue, ContentsMatcher contentsMatcher, int check)
+            throws IOException {
         if (contentsMatcher.match(getContentsToMatch(getBaseMsg())) != null) {
             // Evidence already present, no point sending the payload/attack.
             return false;
@@ -607,18 +590,12 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
         HttpMessage msg = getNewMsg();
         setParameter(msg, param, newValue);
 
-        if (log.isDebugEnabled()) {
-            log.debug(
-                    "Checking ["
-                            + msg.getRequestHeader().getMethod()
-                            + "] ["
-                            + msg.getRequestHeader().getURI()
-                            + "], parameter ["
-                            + param
-                            + "] for Windows Path Traversal (local file) with value ["
-                            + newValue
-                            + "]");
-        }
+        log.debug(
+                "Checking [{}] [{}], parameter [{}] for Windows Path Traversal (local file) with value [{}]",
+                msg.getRequestHeader().getMethod(),
+                msg.getRequestHeader().getURI(),
+                param,
+                newValue);
 
         // send the modified request, and see what we get back
         try {
@@ -630,15 +607,11 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                 | IllegalArgumentException
                 | InvalidRedirectLocationException
                 | URIException ex) {
-            if (log.isDebugEnabled()) {
-                log.debug(
-                        "Caught "
-                                + ex.getClass().getName()
-                                + " "
-                                + ex.getMessage()
-                                + " when accessing: "
-                                + msg.getRequestHeader().getURI().toString());
-            }
+            log.debug(
+                    "Caught {} {} when accessing: {}",
+                    ex.getClass().getName(),
+                    ex.getMessage(),
+                    msg.getRequestHeader().getURI());
 
             return false; // Something went wrong, no point continuing
         }
@@ -647,12 +620,14 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
         String match = contentsMatcher.match(getContentsToMatch(msg));
 
         // if the output matches, and we get a 200
-        if ((msg.getResponseHeader().getStatusCode() == HttpStatusCode.OK) && match != null) {
+        if (isPage200(msg) && match != null) {
             newAlert()
                     .setConfidence(Alert.CONFIDENCE_MEDIUM)
                     .setParam(param)
                     .setAttack(newValue)
                     .setEvidence(match)
+                    .setOtherInfo(
+                            Constant.messages.getString("ascanrules.pathtraversal.other", check))
                     .setMessage(msg)
                     .raise();
 

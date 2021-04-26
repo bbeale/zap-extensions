@@ -19,14 +19,18 @@
  */
 package org.zaproxy.zap.extension.pscanrules;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 import net.htmlparser.jericho.Element;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.Source;
+import org.apache.commons.io.IOUtils;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
-import org.parosproxy.paros.extension.encoder.Base64;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
@@ -152,8 +156,8 @@ public class InsecureJsfViewStatePassiveScanRule extends PluginPassiveScanner {
 
         byte[] viewStateDecodeBytes;
         try {
-            viewStateDecodeBytes = Base64.decode(viewState, Base64.GZIP);
-        } catch (IOException e) {
+            viewStateDecodeBytes = decompress(Base64.getDecoder().decode(viewState));
+        } catch (IOException | IllegalArgumentException e) {
             // ViewState might be unencoded which is theoretically possible.
             return isRawViewStateSecure(viewState);
         }
@@ -168,6 +172,21 @@ public class InsecureJsfViewStatePassiveScanRule extends PluginPassiveScanner {
         }
 
         return true;
+    }
+
+    private static byte[] decompress(byte[] value) throws IOException {
+        if (value.length < 4) {
+            return value;
+        }
+        int head = (value[0] & 0xff) | ((value[1] << 8) & 0xff00);
+        if (GZIPInputStream.GZIP_MAGIC != head) {
+            return value;
+        }
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (GZIPInputStream input = new GZIPInputStream(new ByteArrayInputStream(value))) {
+            IOUtils.copy(input, output, 2048);
+        }
+        return output.toByteArray();
     }
 
     private boolean isRawViewStateSecure(String viewState) {
@@ -195,7 +214,7 @@ public class InsecureJsfViewStatePassiveScanRule extends PluginPassiveScanner {
                 .setOtherInfo(Constant.messages.getString(MESSAGE_PREFIX + "extrainfo", viewState))
                 .setSolution(getSolution())
                 .setReference(getReference())
-                .setCweId(16) // CWE Id 16 - Configuration
+                .setCweId(642) // CWE-642: External Control of Critical State Data
                 .setWascId(14) // WASC Id - Server Misconfiguration
                 .raise();
     }

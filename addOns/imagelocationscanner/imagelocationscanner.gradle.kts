@@ -6,7 +6,7 @@ description = "Image Location and Privacy Passive Scanner"
 zapAddOn {
     addOnName.set("Image Location and Privacy Scanner")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.9.0")
+    zapVersion.set("2.10.0")
 
     manifest {
         author.set("Jay Ball (veggiespam) and the ZAP Dev Team")
@@ -24,9 +24,9 @@ dependencies {
 spotless {
     java {
         target(fileTree(projectDir) {
-            include("**/*.java")
+            include("src/**/*.java")
             // Ignore ILS classes.
-            exclude("**/com/veggiespam/**", "**/ImageLocationScanRule.java")
+            exclude("src/**/com/veggiespam/**", "src/**/ImageLocationScanRule.java")
         })
     }
 }

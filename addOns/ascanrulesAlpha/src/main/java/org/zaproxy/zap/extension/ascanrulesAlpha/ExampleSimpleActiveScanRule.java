@@ -21,7 +21,8 @@ package org.zaproxy.zap.extension.ascanrulesAlpha;
 
 import java.io.IOException;
 import java.util.Random;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.AbstractAppParamPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
@@ -45,13 +46,13 @@ public class ExampleSimpleActiveScanRule extends AbstractAppParamPlugin {
 
     private Random rnd = new Random();
 
-    private static Logger log = Logger.getLogger(ExampleSimpleActiveScanRule.class);
+    private static Logger log = LogManager.getLogger(ExampleSimpleActiveScanRule.class);
 
     @Override
     public int getId() {
         /*
          * This should be unique across all active and passive rules.
-         * The master list is https://github.com/zaproxy/zaproxy/blob/develop/docs/scanners.md
+         * The master list is https://github.com/zaproxy/zaproxy/blob/main/docs/scanners.md
          */
         return 60100;
     }
@@ -127,9 +128,9 @@ public class ExampleSimpleActiveScanRule extends AbstractAppParamPlugin {
             String attack = "attack";
 
             // Always use getNewMsg() for each new request
-            msg = getNewMsg();
-            setParameter(msg, param, attack);
-            sendAndReceive(msg);
+            HttpMessage testMsg = getNewMsg();
+            setParameter(testMsg, param, attack);
+            sendAndReceive(testMsg);
 
             // This is where you detect potential vulnerabilities in the response
 
@@ -140,7 +141,7 @@ public class ExampleSimpleActiveScanRule extends AbstractAppParamPlugin {
                         .setConfidence(Alert.CONFIDENCE_MEDIUM)
                         .setParam(param)
                         .setAttack(value)
-                        .setMessage(msg)
+                        .setMessage(testMsg)
                         .raise();
                 return;
             }

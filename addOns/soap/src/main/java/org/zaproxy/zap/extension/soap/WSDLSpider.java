@@ -20,24 +20,28 @@
 package org.zaproxy.zap.extension.soap;
 
 import net.htmlparser.jericho.Source;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.spider.parser.SpiderParser;
 
 public class WSDLSpider extends SpiderParser {
 
-    private WSDLCustomParser parser = new WSDLCustomParser();
+    private final WSDLCustomParser parser;
 
-    private static final Logger LOG = Logger.getLogger(WSDLSpider.class);
+    private static final Logger LOG = LogManager.getLogger(WSDLSpider.class);
+
+    public WSDLSpider(WSDLCustomParser parser) {
+        this.parser = parser;
+    }
 
     @Override
     public boolean parseResource(HttpMessage message, Source source, int depth) {
-        return parseResourceWSDL(message, source, depth, true);
+        return parseResourceWSDL(message, true);
     }
 
-    public boolean parseResourceWSDL(
-            HttpMessage message, Source source, int depth, boolean sendRequests) {
+    public boolean parseResourceWSDL(HttpMessage message, boolean sendRequests) {
         if (message == null) return false;
         /* Only applied to wsdl files. */
         LOG.debug("WSDL custom spider called.");
@@ -62,7 +66,7 @@ public class WSDLSpider extends SpiderParser {
                 String content = message.getResponseBody().toString();
                 if (parser.canBeWSDLparsed(content)) return true;
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Content is not wsdl: " + content);
+                    LOG.debug("Content is not wsdl: {}", content);
                 }
             }
         } catch (Exception e) {
@@ -95,7 +99,6 @@ public class WSDLSpider extends SpiderParser {
     public boolean canParseResource(HttpMessage message, String path, boolean wasAlreadyConsumed) {
         // Get the context (base url)
         String baseURL = getURIfromMessage(message);
-        if (baseURL.endsWith(".wsdl")) return true;
-        else return false;
+        return baseURL.endsWith(".wsdl");
     }
 }

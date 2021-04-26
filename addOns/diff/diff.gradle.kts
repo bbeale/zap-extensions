@@ -6,7 +6,7 @@ description = "Displays a dialog showing the differences between 2 requests or r
 zapAddOn {
     addOnName.set("Diff")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.9.0")
+    zapVersion.set("2.10.0")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -21,9 +21,9 @@ dependencies {
 spotless {
     java {
         target(fileTree(projectDir) {
-            include("**/*.java")
+            include("src/**/*.java")
             // Ignore 3rd-party code.
-            exclude("**/diff_match_patch.java", "**/ZapDiffRowGenerator.java")
+            exclude("src/**/diff_match_patch.java", "src/**/ZapDiffRowGenerator.java")
         })
     }
 }

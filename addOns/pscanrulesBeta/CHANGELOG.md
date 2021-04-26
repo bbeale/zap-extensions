@@ -5,8 +5,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 ### Changed
-- Update RE2/J library to latest version (1.4).
+- Now using 2.10 logging infrastructure (Log4j 2.x).
+- Update RE2/J library to latest version (1.6).
+- PII Scan Rule will now ignore CSS and style information (Issue 6288).
+- Discontinued use of CWE-16 and switched to more specific weaknesses in the following scan rules:
+  - CSP Missing
+  - Insecure Form Load
+  - Insecure Form Post
+  - Strict-Transport-Security
+
+## [24] - 2020-12-15
+### Changed
+- Now targeting ZAP 2.10.
+- The following scan rules now support Custom Page definitions:
+  - Insecure Form Load
+  - Insecure Form Post
+  - User Controlled Charset
+  - User Controlled HTML Attribute
+  - User Controlled JavaScript Event
+
+## [23] - 2020-11-18
+### Changed
+- Update RE2/J library to latest version (1.5).
 - Maintenance changes.
+- Content Security Policy header missing scan rule changed to Medium risk in order to align with other CSP findings, and confidence to High (Issue 6301).
 
 ## [22] - 2020-06-01
 ### Added
@@ -166,6 +188,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[24]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v24
+[23]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v23
 [22]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v22
 [21]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v21
 [20]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v20

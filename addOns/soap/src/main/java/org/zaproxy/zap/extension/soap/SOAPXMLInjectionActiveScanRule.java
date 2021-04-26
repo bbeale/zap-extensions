@@ -19,18 +19,20 @@
  */
 package org.zaproxy.zap.extension.soap;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.MimeHeaders;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.AbstractAppParamPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Category;
+import org.parosproxy.paros.network.HttpBody;
 import org.parosproxy.paros.network.HttpMessage;
+import org.w3c.dom.NodeList;
 
 /**
  * SOAP XML Injection Active scan rule
@@ -41,7 +43,7 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
 
     private static final String MESSAGE_PREFIX = "soap.soapxmlinjection.";
 
-    private static final Logger LOG = Logger.getLogger(SOAPXMLInjectionActiveScanRule.class);
+    private static final Logger LOG = LogManager.getLogger(SOAPXMLInjectionActiveScanRule.class);
 
     @Override
     public int getId() {
@@ -70,22 +72,12 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
         return Category.MISC;
     }
 
-    /*
-     * This method is called by the active scanner for each GET and POST parameter
-     * for every page
-     *
-     * @see
-     * org.parosproxy.paros.core.scanner.AbstractAppParamPlugin#scan(org.parosproxy.
-     * paros.network.HttpMessage, java.lang.String, java.lang.String)
-     */
     @Override
     public void scan(HttpMessage msg, String paramName, String paramValue) {
         try {
             /* This scan is only applied to SOAP messages. */
-            final String request = new String(msg.getRequestBody().getBytes());
-            final String reqCharset = msg.getRequestBody().getCharset();
             if (this.isStop()) return;
-            if (isSoapMessage(request, reqCharset)) {
+            if (isSoapMessage(msg.getRequestBody())) {
                 String paramValue2 = paramValue + "_modified";
                 String finalValue =
                         paramValue + "</" + paramName + "><" + paramName + ">" + paramValue2;
@@ -94,9 +86,6 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
                 if (modifiedMsg == null) return;
                 /* Request message that contains the XML code to be injected. */
                 HttpMessage attackMsg = craftAttackMessage(msg, paramName, finalValue);
-                final String escapedContent = new String(attackMsg.getRequestBody().getBytes());
-                final String unescapedContent = StringEscapeUtils.unescapeXml(escapedContent);
-                attackMsg.setRequestBody(unescapedContent);
                 /* Sends the modified request. */
                 if (this.isStop()) return;
                 sendAndReceive(modifiedMsg);
@@ -104,11 +93,13 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
                 sendAndReceive(attackMsg);
                 if (this.isStop()) return;
                 /* Analyzes the response. */
-                final String response = new String(attackMsg.getResponseBody().getBytes());
-                final String resCharset = attackMsg.getResponseBody().getCharset();
                 final HttpMessage originalMsg = getBaseMsg();
                 if (this.isStop()) return;
-                if (!isSoapMessage(response, resCharset)) {
+                String soapVersionInfo =
+                        originalMsg.getRequestHeader().getHeader("SOAPAction") != null
+                                ? " SOAP version 1.1."
+                                : " SOAP version 1.2.";
+                if (!isSoapMessage(attackMsg.getResponseBody())) {
                     /*
                      * Response has no SOAP format. It is still notified since it is an unexpected
                      * result.
@@ -117,7 +108,9 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
                             .setRisk(Alert.RISK_LOW)
                             .setConfidence(Alert.CONFIDENCE_MEDIUM)
                             .setAttack(finalValue)
-                            .setOtherInfo(Constant.messages.getString(MESSAGE_PREFIX + "warn1"))
+                            .setOtherInfo(
+                                    Constant.messages.getString(MESSAGE_PREFIX + "warn1")
+                                            + soapVersionInfo)
                             .setMessage(attackMsg)
                             .raise();
                 } else if (responsesAreEqual(modifiedMsg, attackMsg)
@@ -129,7 +122,9 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
                     newAlert()
                             .setConfidence(Alert.CONFIDENCE_MEDIUM)
                             .setAttack(finalValue)
-                            .setOtherInfo(Constant.messages.getString(MESSAGE_PREFIX + "warn2"))
+                            .setOtherInfo(
+                                    Constant.messages.getString(MESSAGE_PREFIX + "warn2")
+                                            + soapVersionInfo)
                             .setMessage(attackMsg)
                             .raise();
                 }
@@ -140,19 +135,12 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
     }
 
     /* Checks whether server response follows a SOAP message format. */
-    private boolean isSoapMessage(String content, String charset) {
-        SOAPMessage soapMsg = null;
-        if (content.length() <= 0) return false;
-        MessageFactory factory;
+    private boolean isSoapMessage(HttpBody msgBody) {
+        if (msgBody.length() <= 0) return false;
         try {
-            factory = MessageFactory.newInstance();
-            soapMsg =
-                    factory.createMessage(
-                            new MimeHeaders(),
-                            new ByteArrayInputStream(content.getBytes(Charset.forName(charset))));
+            SOAPMessage soapMsg = SoapMessageFactory.createMessage(msgBody);
             /* Content has been parsed correctly as SOAP content. */
-            if (soapMsg != null) return true;
-            else return false;
+            return soapMsg != null;
         } catch (Exception e) {
             /*
              * Error when trying to parse as SOAP content. It is considered as a non-SOAP
@@ -162,24 +150,32 @@ public class SOAPXMLInjectionActiveScanRule extends AbstractAppParamPlugin {
         }
     }
 
-    private HttpMessage craftAttackMessage(HttpMessage msg, String paramName, String finalValue) {
-        /* Retrieves message configuration to craft a new one. */
-        ImportWSDL wsdlSingleton = ImportWSDL.getInstance();
-        SOAPMsgConfig soapConfig = wsdlSingleton.getSoapConfig(msg);
-        if (soapConfig == null) return null;
-        /* XML code injection. */
-        boolean isParamChanged = soapConfig.changeParam(paramName, finalValue);
-        /* Crafts the message. */
-        WSDLCustomParser parser = new WSDLCustomParser();
-        if (isParamChanged) return parser.createSoapRequest(soapConfig);
-        else return null;
+    protected HttpMessage craftAttackMessage(HttpMessage msg, String paramName, String finalValue) {
+        try {
+            SOAPMessage soapMsg = SoapMessageFactory.createMessage(msg.getRequestBody());
+            if (soapMsg == null) {
+                LOG.debug("Not a SOAP message.");
+                return null;
+            }
+            NodeList nodeList = soapMsg.getSOAPBody().getElementsByTagName(paramName);
+            if (nodeList.getLength() == 0) {
+                LOG.debug("Not a SOAP element: {}", paramName);
+                return null;
+            }
+            nodeList.item(0).setTextContent(finalValue);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            soapMsg.writeTo(outputStream);
+            HttpMessage attackMsg = new HttpMessage(msg);
+            attackMsg.setRequestBody(StringEscapeUtils.unescapeXml(outputStream.toString()));
+            return attackMsg;
+        } catch (SOAPException | IOException e) {
+            LOG.warn("Malformed SOAP Message.");
+            return null;
+        }
     }
 
     private boolean responsesAreEqual(HttpMessage original, HttpMessage crafted) {
-        final String originalContent = new String(original.getResponseBody().getBytes());
-        final String craftedContent = new String(crafted.getResponseBody().getBytes());
-        if (originalContent.equals(craftedContent)) return true;
-        else return false;
+        return original.getResponseBody().toString().equals(crafted.getResponseBody().toString());
     }
 
     @Override

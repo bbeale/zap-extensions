@@ -22,7 +22,8 @@ package org.zaproxy.zap.extension.sse.ui;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections.map.LRUMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.db.DatabaseException;
 import org.zaproxy.zap.extension.sse.ServerSentEvent;
@@ -34,13 +35,13 @@ import org.zaproxy.zap.utils.PagingTableModel;
 
 /**
  * This model uses a database table to load only needed entries from database. Moreover it shows
- * only those entries that are not blacklisted by the given filter.
+ * only those entries that are not deny listed by the given filter.
  */
 public class EventStreamViewModel extends PagingTableModel<ServerSentEvent> {
 
     private static final long serialVersionUID = -5047686640383236512L;
 
-    private static final Logger logger = Logger.getLogger(EventStreamViewModel.class);
+    private static final Logger logger = LogManager.getLogger(EventStreamViewModel.class);
 
     private static final int PAYLOAD_PREVIEW_LENGTH = 150;
 
@@ -308,9 +309,9 @@ public class EventStreamViewModel extends PagingTableModel<ServerSentEvent> {
      * @param event
      */
     public void fireMessageArrived(ServerSentEvent event) {
-        boolean isWhitelistedChannel =
+        boolean isAllowlistedChannel =
                 (activeStreamId == null) || event.getStreamId().equals(activeStreamId);
-        if ((filter != null && filter.isBlacklisted(event)) || !isWhitelistedChannel) {
+        if ((filter != null && filter.isDenylisted(event)) || !isAllowlistedChannel) {
             // no need to fire update, as it isn't active now
         } else {
             // find out where it is inserted and update precisely

@@ -4,11 +4,15 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Now using 2.10 logging infrastructure (Log4j 2.x).
+
+## [14] - 2020-12-15
 ### Added
 - Add info and repo URLs.
 
 ### Changed
-- Update minimum ZAP version to 2.9.0.
+- Update minimum ZAP version to 2.10.0.
 - Improve permissions and space handling when saving.
 
 ## [13] - 2019-07-15
@@ -79,4 +83,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[14]: https://github.com/zaproxy/zap-extensions/releases/tokengen-v14
 [13]: https://github.com/zaproxy/zap-extensions/releases/tokengen-v13

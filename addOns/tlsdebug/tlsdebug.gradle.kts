@@ -1,9 +1,9 @@
-version = "4"
+version = "5"
 description = "Provides a tab which allows to quickly debug a TLS/SSL connection"
 
 zapAddOn {
     addOnName.set("TLS Debug")
-    zapVersion.set("2.9.0")
+    zapVersion.set("2.10.0")
 
     manifest {
         author.set("P.M.J. Roth")

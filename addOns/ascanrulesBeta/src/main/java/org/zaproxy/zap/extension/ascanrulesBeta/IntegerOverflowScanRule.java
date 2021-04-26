@@ -23,13 +23,13 @@
 package org.zaproxy.zap.extension.ascanrulesBeta;
 
 import java.io.IOException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.AbstractAppParamPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Category;
 import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.network.HttpStatusCode;
 import org.zaproxy.zap.model.Tech;
 import org.zaproxy.zap.model.TechSet;
 
@@ -39,7 +39,7 @@ public class IntegerOverflowScanRule extends AbstractAppParamPlugin {
     private static final String MESSAGE_PREFIX = "ascanbeta.integeroverflow.";
 
     private static final int PLUGIN_ID = 30003;
-    private static final Logger log = Logger.getLogger(IntegerOverflowScanRule.class);
+    private static final Logger log = LogManager.getLogger(IntegerOverflowScanRule.class);
 
     @Override
     public int getId() {
@@ -90,9 +90,7 @@ public class IntegerOverflowScanRule extends AbstractAppParamPlugin {
         if (checkStop() == true) {
             return;
         }
-        if (getBaseMsg().getResponseHeader().getStatusCode()
-                == HttpStatusCode
-                        .INTERNAL_SERVER_ERROR) // Check to see if the page closed initially
+        if (isPage500(getBaseMsg())) // Check to see if the page was initially a 500
         {
             return; // Stop
         }
@@ -177,9 +175,7 @@ public class IntegerOverflowScanRule extends AbstractAppParamPlugin {
 
     private boolean checkStop() {
         if (this.isStop()) { // Check if the user stopped things
-            if (log.isDebugEnabled()) {
-                log.debug("Scan rule " + this.getName() + " Stopping.");
-            }
+            log.debug("Scan rule {} stopping.", getName());
             return true; // Stop!
         }
         return false;
@@ -194,7 +190,7 @@ public class IntegerOverflowScanRule extends AbstractAppParamPlugin {
         setParameter(msg, param, returnAttack);
         try {
             sendAndReceive(msg);
-            if (msg.getResponseHeader().getStatusCode() == HttpStatusCode.INTERNAL_SERVER_ERROR) {
+            if (isPage500(msg)) {
                 log.debug("Found Header");
                 newAlert()
                         .setConfidence(Alert.CONFIDENCE_MEDIUM)

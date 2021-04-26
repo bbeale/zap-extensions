@@ -1,9 +1,12 @@
-version = "10"
+import org.zaproxy.gradle.addon.AddOnStatus
+
+version = "11"
 description = "DOM XSS Active scanner rule"
 
 zapAddOn {
     addOnName.set("DOM XSS Active scanner rule")
-    zapVersion.set("2.9.0")
+    addOnStatus.set(AddOnStatus.BETA)
+    zapVersion.set("2.10.0")
 
     manifest {
         author.set("Aabha Biyani, ZAP Dev Team")
@@ -26,4 +29,14 @@ zapAddOn {
 
 dependencies {
     compileOnly(parent!!.childProjects.get("selenium")!!)
+    testImplementation(parent!!.childProjects.get("selenium")!!)
+    testImplementation("io.github.bonigarcia:webdrivermanager:4.2.2")
+    testImplementation(project(":testutils"))
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperties.putAll(mapOf(
+            "wdm.chromeDriverVersion" to "83.0.4103.39",
+            "wdm.geckoDriverVersion" to "0.29.0",
+            "wdm.forceCache" to "true"))
 }

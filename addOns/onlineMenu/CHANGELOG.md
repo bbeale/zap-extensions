@@ -5,7 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 ### Changed
-- Update minimum ZAP version to 2.9.0.
+- Maintenance changes.
+
+## [8] - 2020-12-15
+### Added
+- Video page link.
+
+### Changed
+- Update minimum ZAP version to 2.10.0.
+- ZAP Homepage to ZAP Website.
+- ZAP Extensions to ZAP Marketplace
+
+### Removed
+- Newsletter link.
+- Wiki link.
 
 ## [7] - 2020-01-17
 ### Added
@@ -36,4 +49,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Promoted to beta, updated for ZAP 2.4
 
+[8]: https://github.com/zaproxy/zap-extensions/releases/onlineMenu-v8
 [7]: https://github.com/zaproxy/zap-extensions/releases/onlineMenu-v7

@@ -57,8 +57,8 @@ public class CacheControlScanRule extends PluginPassiveScanner {
             } else {
                 // MEDIUM or HIGH thresholds
                 if (HttpStatusCode.isRedirection(msg.getResponseHeader().getStatusCode())
-                        || HttpStatusCode.isClientError(msg.getResponseHeader().getStatusCode())
-                        || HttpStatusCode.isServerError(msg.getResponseHeader().getStatusCode())) {
+                        || getHelper().isClientError(msg)
+                        || getHelper().isServerError(msg)) {
                     return;
                 } else if (!msg.getResponseHeader().isText()
                         || msg.getResponseHeader().isJavaScript()) {
@@ -78,15 +78,6 @@ public class CacheControlScanRule extends PluginPassiveScanner {
                     || cacheControlHeaders.indexOf("no-cache") < 0
                     || cacheControlHeaders.indexOf("must-revalidate") < 0) {
                 this.raiseAlert(msg, id, HttpHeader.CACHE_CONTROL, cacheControlHeaders);
-            }
-
-            List<String> pragma = msg.getResponseHeader().getHeaderValues(HttpHeader.PRAGMA);
-            if (!pragma.isEmpty()) {
-                for (String pragmaDirective : pragma) {
-                    if (pragmaDirective.toLowerCase().indexOf("no-cache") < 0) {
-                        this.raiseAlert(msg, id, HttpHeader.PRAGMA, pragmaDirective);
-                    }
-                }
             }
         }
     }

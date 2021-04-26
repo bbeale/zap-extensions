@@ -40,7 +40,8 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.control.Control.Mode;
@@ -126,7 +127,7 @@ import org.zaproxy.zap.view.SiteMapTreeCellRenderer;
 public class ExtensionWebSocket extends ExtensionAdaptor
         implements PersistentConnectionListener, SessionChangedListener, SiteMapListener {
 
-    private static final Logger logger = Logger.getLogger(ExtensionWebSocket.class);
+    private static final Logger logger = LogManager.getLogger(ExtensionWebSocket.class);
 
     /**
      * The script icon.
@@ -369,6 +370,7 @@ public class ExtensionWebSocket extends ExtensionAdaptor
                         new WebSocketBreakpointMessageHandler(
                                 extBreak.getBreakpointManagementInterface(), config);
                 wsBrkMessageHandler.setEnabledBreakpoints(extBreak.getBreakpointsEnabledList());
+                wsBrkMessageHandler.setEnabledIgnoreRules(Collections.emptyList());
 
                 // listen on new messages such that breakpoints can apply
                 addAllChannelObserver(new WebSocketProxyListenerBreak(this, wsBrkMessageHandler));
@@ -868,10 +870,9 @@ public class ExtensionWebSocket extends ExtensionAdaptor
                 }
             }
             logger.error(
-                    "Adding WebSockets channel failed due to: '"
-                            + e.getClass()
-                            + "' "
-                            + e.getMessage(),
+                    "Adding WebSockets channel failed due to: '{}' {}",
+                    e.getClass(),
+                    e.getMessage(),
                     e);
             return;
         }
@@ -1009,7 +1010,7 @@ public class ExtensionWebSocket extends ExtensionAdaptor
     }
 
     /**
-     * If given channel is blacklisted, then nothing should be stored. Moreover it should not appear
+     * If given channel is deny listed, then nothing should be stored. Moreover it should not appear
      * in user interface, but messages should be forwarded.
      *
      * @param channel
@@ -1019,7 +1020,7 @@ public class ExtensionWebSocket extends ExtensionAdaptor
         boolean doNotStore = false;
 
         if (config.isForwardAll()) {
-            // all channels are blacklisted
+            // all channels are deny listed
             doNotStore = true;
         } else if (!preparedIgnoredChannels.isEmpty()) {
             for (Pattern p : preparedIgnoredChannels) {

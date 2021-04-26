@@ -4,7 +4,17 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Now using 2.10 logging infrastructure (Log4j 2.x).
+- Maintenance changes.
 
+## [23] - 2020-12-18
+### Changed
+- Update minimum ZAP version to 2.10.0.
+
+### Fixed
+ - Fix exception when handling breakpoints with ZAP 2.10.0.
+ - Terminology
 
 ## [22] - 2020-08-17
 ### Changed
@@ -159,6 +169,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[23]: https://github.com/zaproxy/zap-extensions/releases/websocket-v23
 [22]: https://github.com/zaproxy/zap-extensions/releases/websocket-v22
 [21]: https://github.com/zaproxy/zap-extensions/releases/websocket-v21
 [20]: https://github.com/zaproxy/zap-extensions/releases/websocket-v20

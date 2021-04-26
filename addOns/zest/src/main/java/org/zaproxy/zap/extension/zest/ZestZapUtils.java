@@ -33,76 +33,77 @@ import java.util.Map;
 import javax.swing.JPopupMenu;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.log4j.Logger;
-import org.mozilla.zest.core.v1.ZestActionFail;
-import org.mozilla.zest.core.v1.ZestActionGlobalVariableRemove;
-import org.mozilla.zest.core.v1.ZestActionGlobalVariableSet;
-import org.mozilla.zest.core.v1.ZestActionIntercept;
-import org.mozilla.zest.core.v1.ZestActionInvoke;
-import org.mozilla.zest.core.v1.ZestActionPrint;
-import org.mozilla.zest.core.v1.ZestActionScan;
-import org.mozilla.zest.core.v1.ZestActionSleep;
-import org.mozilla.zest.core.v1.ZestAssertion;
-import org.mozilla.zest.core.v1.ZestAssignCalc;
-import org.mozilla.zest.core.v1.ZestAssignFieldValue;
-import org.mozilla.zest.core.v1.ZestAssignFromElement;
-import org.mozilla.zest.core.v1.ZestAssignGlobalVariable;
-import org.mozilla.zest.core.v1.ZestAssignRandomInteger;
-import org.mozilla.zest.core.v1.ZestAssignRegexDelimiters;
-import org.mozilla.zest.core.v1.ZestAssignReplace;
-import org.mozilla.zest.core.v1.ZestAssignString;
-import org.mozilla.zest.core.v1.ZestAssignStringDelimiters;
-import org.mozilla.zest.core.v1.ZestClientAssignCookie;
-import org.mozilla.zest.core.v1.ZestClientElementAssign;
-import org.mozilla.zest.core.v1.ZestClientElementClear;
-import org.mozilla.zest.core.v1.ZestClientElementClick;
-import org.mozilla.zest.core.v1.ZestClientElementSendKeys;
-import org.mozilla.zest.core.v1.ZestClientElementSubmit;
-import org.mozilla.zest.core.v1.ZestClientLaunch;
-import org.mozilla.zest.core.v1.ZestClientScreenshot;
-import org.mozilla.zest.core.v1.ZestClientSwitchToFrame;
-import org.mozilla.zest.core.v1.ZestClientWindowClose;
-import org.mozilla.zest.core.v1.ZestClientWindowHandle;
-import org.mozilla.zest.core.v1.ZestClientWindowOpenUrl;
-import org.mozilla.zest.core.v1.ZestComment;
-import org.mozilla.zest.core.v1.ZestConditional;
-import org.mozilla.zest.core.v1.ZestControlLoopBreak;
-import org.mozilla.zest.core.v1.ZestControlLoopNext;
-import org.mozilla.zest.core.v1.ZestControlReturn;
-import org.mozilla.zest.core.v1.ZestElement;
-import org.mozilla.zest.core.v1.ZestExpressionAnd;
-import org.mozilla.zest.core.v1.ZestExpressionClientElementExists;
-import org.mozilla.zest.core.v1.ZestExpressionEquals;
-import org.mozilla.zest.core.v1.ZestExpressionIsInteger;
-import org.mozilla.zest.core.v1.ZestExpressionLength;
-import org.mozilla.zest.core.v1.ZestExpressionOr;
-import org.mozilla.zest.core.v1.ZestExpressionRegex;
-import org.mozilla.zest.core.v1.ZestExpressionResponseTime;
-import org.mozilla.zest.core.v1.ZestExpressionStatusCode;
-import org.mozilla.zest.core.v1.ZestExpressionURL;
-import org.mozilla.zest.core.v1.ZestLoopClientElements;
-import org.mozilla.zest.core.v1.ZestLoopFile;
-import org.mozilla.zest.core.v1.ZestLoopInteger;
-import org.mozilla.zest.core.v1.ZestLoopRegex;
-import org.mozilla.zest.core.v1.ZestLoopString;
-import org.mozilla.zest.core.v1.ZestRequest;
-import org.mozilla.zest.core.v1.ZestResponse;
-import org.mozilla.zest.core.v1.ZestRuntime;
-import org.mozilla.zest.core.v1.ZestScript;
-import org.mozilla.zest.core.v1.ZestStatement;
-import org.mozilla.zest.core.v1.ZestVariables;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpResponseHeader;
 import org.zaproxy.zap.extension.script.ScriptNode;
+import org.zaproxy.zest.core.v1.ZestActionFail;
+import org.zaproxy.zest.core.v1.ZestActionGlobalVariableRemove;
+import org.zaproxy.zest.core.v1.ZestActionGlobalVariableSet;
+import org.zaproxy.zest.core.v1.ZestActionIntercept;
+import org.zaproxy.zest.core.v1.ZestActionInvoke;
+import org.zaproxy.zest.core.v1.ZestActionPrint;
+import org.zaproxy.zest.core.v1.ZestActionScan;
+import org.zaproxy.zest.core.v1.ZestActionSleep;
+import org.zaproxy.zest.core.v1.ZestAssertion;
+import org.zaproxy.zest.core.v1.ZestAssignCalc;
+import org.zaproxy.zest.core.v1.ZestAssignFieldValue;
+import org.zaproxy.zest.core.v1.ZestAssignFromElement;
+import org.zaproxy.zest.core.v1.ZestAssignGlobalVariable;
+import org.zaproxy.zest.core.v1.ZestAssignRandomInteger;
+import org.zaproxy.zest.core.v1.ZestAssignRegexDelimiters;
+import org.zaproxy.zest.core.v1.ZestAssignReplace;
+import org.zaproxy.zest.core.v1.ZestAssignString;
+import org.zaproxy.zest.core.v1.ZestAssignStringDelimiters;
+import org.zaproxy.zest.core.v1.ZestClientAssignCookie;
+import org.zaproxy.zest.core.v1.ZestClientElementAssign;
+import org.zaproxy.zest.core.v1.ZestClientElementClear;
+import org.zaproxy.zest.core.v1.ZestClientElementClick;
+import org.zaproxy.zest.core.v1.ZestClientElementSendKeys;
+import org.zaproxy.zest.core.v1.ZestClientElementSubmit;
+import org.zaproxy.zest.core.v1.ZestClientLaunch;
+import org.zaproxy.zest.core.v1.ZestClientScreenshot;
+import org.zaproxy.zest.core.v1.ZestClientSwitchToFrame;
+import org.zaproxy.zest.core.v1.ZestClientWindowClose;
+import org.zaproxy.zest.core.v1.ZestClientWindowHandle;
+import org.zaproxy.zest.core.v1.ZestClientWindowOpenUrl;
+import org.zaproxy.zest.core.v1.ZestComment;
+import org.zaproxy.zest.core.v1.ZestConditional;
+import org.zaproxy.zest.core.v1.ZestControlLoopBreak;
+import org.zaproxy.zest.core.v1.ZestControlLoopNext;
+import org.zaproxy.zest.core.v1.ZestControlReturn;
+import org.zaproxy.zest.core.v1.ZestElement;
+import org.zaproxy.zest.core.v1.ZestExpressionAnd;
+import org.zaproxy.zest.core.v1.ZestExpressionClientElementExists;
+import org.zaproxy.zest.core.v1.ZestExpressionEquals;
+import org.zaproxy.zest.core.v1.ZestExpressionIsInteger;
+import org.zaproxy.zest.core.v1.ZestExpressionLength;
+import org.zaproxy.zest.core.v1.ZestExpressionOr;
+import org.zaproxy.zest.core.v1.ZestExpressionRegex;
+import org.zaproxy.zest.core.v1.ZestExpressionResponseTime;
+import org.zaproxy.zest.core.v1.ZestExpressionStatusCode;
+import org.zaproxy.zest.core.v1.ZestExpressionURL;
+import org.zaproxy.zest.core.v1.ZestLoopClientElements;
+import org.zaproxy.zest.core.v1.ZestLoopFile;
+import org.zaproxy.zest.core.v1.ZestLoopInteger;
+import org.zaproxy.zest.core.v1.ZestLoopRegex;
+import org.zaproxy.zest.core.v1.ZestLoopString;
+import org.zaproxy.zest.core.v1.ZestRequest;
+import org.zaproxy.zest.core.v1.ZestResponse;
+import org.zaproxy.zest.core.v1.ZestRuntime;
+import org.zaproxy.zest.core.v1.ZestScript;
+import org.zaproxy.zest.core.v1.ZestStatement;
+import org.zaproxy.zest.core.v1.ZestVariables;
 
 public class ZestZapUtils {
 
     private static final String ZEST_VAR_VALID_CHRS = "-:.";
 
-    private static final Logger log = Logger.getLogger(ZestZapUtils.class);
+    private static final Logger log = LogManager.getLogger(ZestZapUtils.class);
 
     /**
      * A map to convert labels to calc operations.
@@ -869,7 +870,7 @@ public class ZestZapUtils {
         try {
             file = Paths.get(filePath);
         } catch (InvalidPathException e) {
-            log.warn("Failed to parse the file path: " + filePath, e);
+            log.warn("Failed to parse the file path: {}", filePath, e);
             return "";
         }
 
@@ -1102,10 +1103,9 @@ public class ZestZapUtils {
             return ((ZestElementWrapper) node.getUserObject()).getElement();
         }
         log.debug(
-                "getElement "
-                        + node.getNodeName()
-                        + " Unrecognised class: "
-                        + node.getUserObject().getClass().getCanonicalName());
+                "getElement {} Unrecognised class: {}",
+                node.getNodeName(),
+                node.getUserObject().getClass().getCanonicalName());
         return null;
     }
 

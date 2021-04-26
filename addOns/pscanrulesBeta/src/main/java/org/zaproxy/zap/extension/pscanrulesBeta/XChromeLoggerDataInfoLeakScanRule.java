@@ -19,15 +19,15 @@
  */
 package org.zaproxy.zap.extension.pscanrulesBeta;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import net.htmlparser.jericho.Source;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
-import org.parosproxy.paros.extension.encoder.Base64;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
@@ -42,7 +42,8 @@ public class XChromeLoggerDataInfoLeakScanRule extends PluginPassiveScanner {
     private static final String MESSAGE_PREFIX = "pscanbeta.xchromeloggerdata.";
     private static final int PLUGIN_ID = 10052;
 
-    private static final Logger logger = Logger.getLogger(XChromeLoggerDataInfoLeakScanRule.class);
+    private static final Logger logger =
+            LogManager.getLogger(XChromeLoggerDataInfoLeakScanRule.class);
 
     @Override
     public void setParent(PassiveScanThread parent) {
@@ -87,14 +88,7 @@ public class XChromeLoggerDataInfoLeakScanRule extends PluginPassiveScanner {
                         .raise();
             }
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug(
-                    "\tScan of record "
-                            + id
-                            + " took "
-                            + (System.currentTimeMillis() - start)
-                            + " ms");
-        }
+        logger.debug("\tScan of record {} took {}ms", id, System.currentTimeMillis() - start);
     }
 
     @Override
@@ -121,11 +115,11 @@ public class XChromeLoggerDataInfoLeakScanRule extends PluginPassiveScanner {
 
     private String getOtherInfo(String headerValue) {
         try {
-            byte[] decodedByteArray = Base64.decode(headerValue);
+            byte[] decodedByteArray = Base64.getDecoder().decode(headerValue);
             return Constant.messages.getString(MESSAGE_PREFIX + "otherinfo.msg")
                     + "\n"
                     + new String(decodedByteArray, StandardCharsets.UTF_8);
-        } catch (IOException e) {
+        } catch (IllegalArgumentException e) {
             return Constant.messages.getString(MESSAGE_PREFIX + "otherinfo.error")
                     + " "
                     + headerValue;

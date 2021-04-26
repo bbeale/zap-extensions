@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +36,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.apache.log4j.Logger;
-import org.mozilla.zest.core.v1.ZestAuthentication;
-import org.mozilla.zest.core.v1.ZestHttpAuthentication;
-import org.mozilla.zest.core.v1.ZestJSON;
-import org.mozilla.zest.core.v1.ZestScript;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
-import org.parosproxy.paros.extension.encoder.Base64;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.SiteNode;
 import org.parosproxy.paros.network.HttpHeader;
@@ -54,6 +51,10 @@ import org.zaproxy.zap.extension.script.ScriptType;
 import org.zaproxy.zap.extension.zest.ExtensionZest;
 import org.zaproxy.zap.extension.zest.ZestScriptWrapper;
 import org.zaproxy.zap.view.StandardFieldsDialog;
+import org.zaproxy.zest.core.v1.ZestAuthentication;
+import org.zaproxy.zest.core.v1.ZestHttpAuthentication;
+import org.zaproxy.zest.core.v1.ZestJSON;
+import org.zaproxy.zest.core.v1.ZestScript;
 
 public class ZestScriptsDialog extends StandardFieldsDialog {
 
@@ -72,7 +73,7 @@ public class ZestScriptsDialog extends StandardFieldsDialog {
     private static final String FIELD_LOAD = "zest.dialog.script.label.load";
     private static final String FIELD_DEBUG = "zest.dialog.script.label.debug";
 
-    private static final Logger logger = Logger.getLogger(ZestScriptsDialog.class);
+    private static final Logger logger = LogManager.getLogger(ZestScriptsDialog.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -413,8 +414,7 @@ public class ZestScriptsDialog extends StandardFieldsDialog {
             scriptNode = extension.add(scriptWrapper, false);
             // Add any defered messages
             for (HttpMessage msg : deferedMessages) {
-                logger.debug(
-                        "Adding defered message: " + msg.getRequestHeader().getURI().toString());
+                logger.debug("Adding defered message: {}", msg.getRequestHeader().getURI());
                 extension.addToParent(scriptNode, msg, null);
             }
             deferedMessages.clear();
@@ -465,7 +465,8 @@ public class ZestScriptsDialog extends StandardFieldsDialog {
                 String auth = header.getHeader(HttpHeader.AUTHORIZATION);
                 if (auth != null && auth.length() > 0) {
                     if (auth.toLowerCase().startsWith("basic ")) {
-                        String userPword = new String(Base64.decode(auth.substring(6)));
+                        String userPword =
+                                new String(Base64.getDecoder().decode(auth.substring(6)));
                         int colon = userPword.indexOf(":");
                         if (colon > 0) {
                             this.setFieldValue(FIELD_AUTH_SITE, header.getHostName());

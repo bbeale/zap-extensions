@@ -35,28 +35,44 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.network.HttpMessage;
+import org.parosproxy.paros.network.HttpSender;
 
 public class GraphQlParser {
 
-    private static final Logger LOG = Logger.getLogger(GraphQlParser.class);
+    private static final Logger LOG = LogManager.getLogger(GraphQlParser.class);
     private static final String THREAD_PREFIX = "ZAP-GraphQL-Parser";
     private static AtomicInteger threadId = new AtomicInteger();
 
     private final Requestor requestor;
-    private final ExtensionGraphQl extensionGraphQl =
-            Control.getSingleton().getExtensionLoader().getExtension(ExtensionGraphQl.class);
-    private final GraphQlParam param = extensionGraphQl.getParam();
+    private final ExtensionGraphQl extensionGraphQl;
+    private final GraphQlParam param;
+    private boolean syncParse;
 
-    public GraphQlParser(String endpointUrlStr, int initiator) throws URIException {
-        this(UrlBuilder.build(endpointUrlStr), initiator);
+    // For Unit Tests
+    protected GraphQlParser(String endpointUrlStr) throws URIException {
+        extensionGraphQl = new ExtensionGraphQl();
+        param = extensionGraphQl.getParam();
+        requestor =
+                new Requestor(
+                        UrlBuilder.build(endpointUrlStr), HttpSender.MANUAL_REQUEST_INITIATOR);
     }
 
-    public GraphQlParser(URI endpointUrl, int initiator) {
+    public GraphQlParser(String endpointUrlStr, int initiator, boolean syncParse)
+            throws URIException {
+        this(UrlBuilder.build(endpointUrlStr), initiator, syncParse);
+    }
+
+    public GraphQlParser(URI endpointUrl, int initiator, boolean syncParse) {
         requestor = new Requestor(endpointUrl, initiator);
+        extensionGraphQl =
+                Control.getSingleton().getExtensionLoader().getExtension(ExtensionGraphQl.class);
+        param = extensionGraphQl.getParam();
+        this.syncParse = syncParse;
     }
 
     public void introspect() throws IOException {
@@ -64,13 +80,18 @@ public class GraphQlParser {
                 requestor.sendQuery(
                         IntrospectionQuery.INTROSPECTION_QUERY,
                         GraphQlParam.RequestMethodOption.POST_JSON);
-
+        if (importMessage == null) {
+            throw new IOException("Could not obtain schema via Introspection.");
+        }
         try {
             Map<String, Object> result =
                     new Gson()
                             .fromJson(
                                     importMessage.getResponseBody().toString(),
                                     new TypeToken<Map<String, Object>>() {}.getType());
+            if (result == null) {
+                throw new IOException("The response was empty.");
+            }
             @SuppressWarnings("unchecked")
             Document schema =
                     new IntrospectionResultToSchema()
@@ -110,22 +131,29 @@ public class GraphQlParser {
     }
 
     public void parse(String schema) {
+        if (syncParse) {
+            generate(schema);
+            return;
+        }
         ParserThread t =
                 new ParserThread(THREAD_PREFIX + threadId.incrementAndGet()) {
                     @Override
                     public void run() {
-                        try {
-                            GraphQlGenerator generator =
-                                    new GraphQlGenerator(schema, requestor, param);
-                            generator.checkServiceMethods();
-                            generator.generateAndSend();
-                        } catch (Exception e) {
-                            LOG.error(e.getMessage());
-                        }
+                        generate(schema);
                     }
                 };
         extensionGraphQl.addParserThread(t);
         t.startParser();
+    }
+
+    private void generate(String schema) {
+        try {
+            GraphQlGenerator generator = new GraphQlGenerator(schema, requestor, param);
+            generator.checkServiceMethods();
+            generator.generateAndSend();
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
     }
 
     public void addRequesterListener(RequesterListener listener) {

@@ -1,6 +1,6 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "10"
+version = "11"
 description = "Forced browsing of files and directories using code from the OWASP DirBuster tool"
 
 tasks.withType<JavaCompile> {
@@ -10,7 +10,7 @@ tasks.withType<JavaCompile> {
 zapAddOn {
     addOnName.set("Forced Browse")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.9.0")
+    zapVersion.set("2.10.0")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -23,5 +23,5 @@ dependencies {
 }
 
 spotless {
-    javaWith3rdPartyFormatted(project, listOf("**/main/java/com/sittinglittleduck/**/*.java"))
+    javaWith3rdPartyFormatted(project, listOf("src/main/java/com/sittinglittleduck/**/*.java"))
 }

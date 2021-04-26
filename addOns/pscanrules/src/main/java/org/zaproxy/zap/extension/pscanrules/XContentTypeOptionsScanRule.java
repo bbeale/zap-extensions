@@ -56,8 +56,8 @@ public class XContentTypeOptionsScanRule extends PluginPassiveScanner {
             // If it's an error and we're not including error responses then just return without
             // alerting
             if (!includeErrorRedirectResponses
-                    && (HttpStatusCode.isServerError(responseStatus)
-                            || HttpStatusCode.isClientError(responseStatus)
+                    && (getHelper().isServerError(msg)
+                            || getHelper().isClientError(msg)
                             || HttpStatusCode.isRedirection(responseStatus))) {
                 return;
             }
@@ -88,7 +88,7 @@ public class XContentTypeOptionsScanRule extends PluginPassiveScanner {
                 .setSolution(getSolution())
                 .setReference(getReference())
                 .setEvidence(xContentTypeOption)
-                .setCweId(16) // CWE-16: Configuration
+                .setCweId(693) // CWE-693: Protection Mechanism Failure
                 .setWascId(15) // WASC15: Application Misconfiguration
                 .raise();
     }

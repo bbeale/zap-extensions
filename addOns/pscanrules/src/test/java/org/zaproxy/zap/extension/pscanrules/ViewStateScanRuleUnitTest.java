@@ -23,14 +23,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.parosproxy.paros.core.scanner.Alert;
-import org.parosproxy.paros.extension.encoder.Base64;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 
@@ -121,7 +120,7 @@ public class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanR
         assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_LOW));
         assertThat(alertsRaised.get(1).getName(), equalTo("Old Asp.Net Version in Use"));
         assertThat(alertsRaised.get(1).getWascId(), equalTo(14));
-        assertThat(alertsRaised.get(1).getCweId(), equalTo(16));
+        assertThat(alertsRaised.get(1).getCweId(), equalTo(642));
         assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
         assertSame(msg, alertsRaised.get(1).getMessage());
     }
@@ -149,7 +148,7 @@ public class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanR
         assertThat(alertsRaised.get(0).getName(), equalTo("Emails Found in the Viewstate"));
         assertThat(alertsRaised.get(0).getOtherInfo(), equalTo("[Itest@test.com]"));
         assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
-        assertThat(alertsRaised.get(0).getCweId(), equalTo(16));
+        assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
@@ -172,7 +171,7 @@ public class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanR
                         "The following potential IP addresses were found being serialized in the viewstate field:"));
         assertThat(alertsRaised.get(0).getOtherInfo(), equalTo("[127.0.0.1]"));
         assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
-        assertThat(alertsRaised.get(0).getCweId(), equalTo(16));
+        assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
@@ -190,7 +189,7 @@ public class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanR
         assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_INFO));
         assertThat(alertsRaised.get(1).getName(), equalTo("Split Viewstate in Use"));
         assertThat(alertsRaised.get(1).getWascId(), equalTo(14));
-        assertThat(alertsRaised.get(1).getCweId(), equalTo(16));
+        assertThat(alertsRaised.get(1).getCweId(), equalTo(642));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
@@ -205,8 +204,8 @@ public class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanR
                 "/wEPDwUJODczNjQ5OTk0D2QWAgIDD2QWAgIFDw8WAh4EVGV4dAUWSSBMb3ZlIERvdG5ldEN1cnJ5LmNvbWRkZMHbBY9JqBTvB5/6kXnY15AUSAwa";
         byte[] decoded;
         try {
-            decoded = Base64.decode(base);
-        } catch (IOException e) {
+            decoded = Base64.getDecoder().decode(base);
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(e);
         }
 
@@ -220,7 +219,6 @@ public class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanR
         System.arraycopy(injectBytes, 0, result, part1.length, injectBytes.length);
         System.arraycopy(part2, 0, result, part1.length + injectBytes.length, part2.length);
 
-        String reEncoded = Base64.encodeBytes(result);
-        return reEncoded;
+        return Base64.getEncoder().encodeToString(result);
     }
 }

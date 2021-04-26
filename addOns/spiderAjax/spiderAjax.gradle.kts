@@ -1,13 +1,9 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-version = "23.2.0"
+version = "23.4.0"
 description = "Allows you to spider sites that make heavy use of JavaScript using Crawljax"
 
-repositories {
-    maven(url = uri("https://oss.sonatype.org/content/repositories/snapshots/"))
-}
-
-val minimumZapVersion = "2.9.0"
+val minimumZapVersion = "2.10.0"
 
 zapAddOn {
     addOnName.set("Ajax Spider")
@@ -17,6 +13,20 @@ zapAddOn {
     manifest {
         author.set("ZAP Dev Team")
         url.set("https://www.zaproxy.org/docs/desktop/addons/ajax-spider/")
+        extensions {
+            register("org.zaproxy.zap.extension.spiderAjax.automation.ExtensionAjaxAutomation") {
+                classnames {
+                    allowed.set(listOf("org.zaproxy.zap.extension.spiderAjax.automation"))
+                }
+                dependencies {
+                    addOns {
+                        register("automation") {
+                            version.set("0.*")
+                        }
+                    }
+                }
+            }
+        }
         dependencies {
             addOns {
                 register("selenium") {
@@ -44,6 +54,7 @@ zapAddOn {
 
 dependencies {
     compileOnly(parent!!.childProjects.get("selenium")!!)
+    compileOnly(parent!!.childProjects.get("automation")!!)
     implementation(files("lib/crawljax-core-3.7.jar"))
     implementation("commons-math:commons-math:1.2")
     implementation("com.codahale.metrics:metrics-core:3.0.2")
@@ -64,4 +75,6 @@ dependencies {
         exclude(group = "log4j", module = "log4j")
     }
     implementation("xmlunit:xmlunit:1.5")
+    testImplementation(parent!!.childProjects.get("automation")!!)
+    testImplementation(project(":testutils"))
 }

@@ -103,11 +103,11 @@ public class CrlfInjectionScanRule extends AbstractAppParamPlugin {
         // loop parameters
 
         for (int i = 0; i < PARAM_LIST.length; i++) {
-            msg = getNewMsg();
-            setParameter(msg, param, PARAM_LIST[i]);
+            HttpMessage testMsg = getNewMsg();
+            setParameter(testMsg, param, PARAM_LIST[i]);
             try {
-                sendAndReceive(msg, false);
-                if (checkResult(msg, param, PARAM_LIST[i])) {
+                sendAndReceive(testMsg, false);
+                if (checkResult(testMsg, param, PARAM_LIST[i])) {
                     return;
                 }
 
@@ -117,12 +117,6 @@ public class CrlfInjectionScanRule extends AbstractAppParamPlugin {
     }
 
     private boolean checkResult(HttpMessage msg, String param, String attack) {
-        // no need to bother if response OK or not.
-        //      if (msg.getResponseHeader().getStatusCode() != HttpStatusCode.OK
-        //          && !HttpStatusCode.isServerError(msg.getResponseHeader().getStatusCode())) {
-        //          return false;
-        //      }
-
         Matcher matcher = patternCookieTamper.matcher(msg.getResponseHeader().toString());
         if (matcher.find()) {
             newAlert()

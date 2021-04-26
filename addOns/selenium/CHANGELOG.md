@@ -6,7 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Changed
+- Now using 2.10 logging infrastructure (Log4j 2.x).
+- Update links to zaproxy repo.
+- Maintenance changes.
+
+## [15.3.0] - 2020-12-15
+### Changed
 - Invoke Selenium scripts synchronously for AJAX Spider's browsers, to prevent interferences with the crawler.
+- Update minimum ZAP version to 2.10.0.
 
 ## [15.2.0] - 2020-03-31
 ### Added
@@ -100,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated to Selenium 2.45 and moved to release
 
+[15.3.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.3.0
 [15.2.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.2.0
 [15.1.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.1.0
 [15.0.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.0.0

@@ -68,8 +68,8 @@ public class XFrameOptionScanRule extends PluginPassiveScanner {
             // If it's an error/redirect and we're not including them then just return without
             // alerting
             if (!includeErrorsAndRedirects
-                    && (HttpStatusCode.isServerError(responseStatus)
-                            || HttpStatusCode.isClientError(responseStatus)
+                    && (getHelper().isServerError(msg)
+                            || getHelper().isClientError(msg)
                             || HttpStatusCode.isRedirection(responseStatus))) {
                 return;
             }
@@ -91,8 +91,7 @@ public class XFrameOptionScanRule extends PluginPassiveScanner {
             if (!xFrameOption.isEmpty()) {
                 for (String xFrameOptionParam : xFrameOption) {
                     if (xFrameOptionParam.toLowerCase().indexOf("deny") < 0
-                            && xFrameOptionParam.toLowerCase().indexOf("sameorigin") < 0
-                            && xFrameOptionParam.toLowerCase().indexOf("allow-from") < 0) {
+                            && xFrameOptionParam.toLowerCase().indexOf("sameorigin") < 0) {
                         buildAlert(xFrameOptionParam, VulnType.XFO_MALFORMED_SETTING).raise();
                     }
                 }
@@ -130,7 +129,7 @@ public class XFrameOptionScanRule extends PluginPassiveScanner {
                 .setSolution(getAlertElement(currentVT, "soln"))
                 .setReference(getAlertElement(currentVT, "refs"))
                 .setEvidence(evidence)
-                .setCweId(16) // CWE-16: Configuration
+                .setCweId(1021) // CWE-1021: Improper Restriction of Rendered UI Layers or Frames
                 .setWascId(15); // WASC-15: Application Misconfiguration
     }
 

@@ -5,10 +5,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 ### Changed
-- Update minimum ZAP version to 2.9.0.
+- Do not show `Null` script engine in Edit Script dialogue.
+- Now using 2.10 logging infrastructure (Log4j 2.x).
+- Update links to zaproxy repo.
+- Maintenance Changes.
+
+## [28] - 2020-12-18
+
+### Fixed
+ - GUI could hang when lots of print statements are used.
+
+## [27] - 2020-12-15
+### Changed
+- Update minimum ZAP version to 2.10.0.
 - Tweak help content.
 - Show script engine when editing the script.
 - Fixed case where script print statements could deadlock ZAP.
+- Maintenance changes.
+- Support dark mode and dynamic Look and Feel switching
+
+### Fixed
+ - Terminology
+ - Do not show the Enable/Disable Script menu item if the script can't be enabled/disabled, in some
+ look and feels it could show an empty menu item (Issue 6256).
 
 ## [26] - 2020-01-17
 ### Added
@@ -153,5 +172,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[28]: https://github.com/zaproxy/zap-extensions/releases/scripts-v28
+[27]: https://github.com/zaproxy/zap-extensions/releases/scripts-v27
 [26]: https://github.com/zaproxy/zap-extensions/releases/scripts-v26
 [25]: https://github.com/zaproxy/zap-extensions/releases/scripts-v25

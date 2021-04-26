@@ -44,7 +44,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.OptionsChangedListener;
 import org.parosproxy.paros.model.OptionsParam;
@@ -61,7 +62,7 @@ public class EncodeDecodeDialog extends AbstractFrame implements OptionsChangedL
     public static final String ENCODE_DECODE_FIELD = "EncodeDecodeInputField";
     public static final String ENCODE_DECODE_RESULTFIELD = "EncodeDecodeResultField";
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = Logger.getLogger(EncodeDecodeDialog.class);
+    private static final Logger LOGGER = LogManager.getLogger(EncodeDecodeDialog.class);
     private final EncodeDecodeProcessors encodeDecodeProcessors;
     private JTabbedPane jTabbed = null;
     private JPanel jPanel = null;
@@ -79,7 +80,7 @@ public class EncodeDecodeDialog extends AbstractFrame implements OptionsChangedL
     public EncodeDecodeDialog(List<TabModel> tabModels) {
         super();
         encodeDecodeProcessors = new EncodeDecodeProcessors();
-        initialize();
+        init();
         setTabs(tabModels);
 
         addWindowListener(
@@ -150,7 +151,7 @@ public class EncodeDecodeDialog extends AbstractFrame implements OptionsChangedL
     }
 
     /** This method initializes this */
-    private void initialize() {
+    private void init() {
         this.setAlwaysOnTop(false);
         this.setContentPane(getMainPanel());
         this.setTitle(Constant.messages.getString("encoder.dialog.title"));

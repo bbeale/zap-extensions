@@ -30,24 +30,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
-import org.apache.log4j.Logger;
-import org.mozilla.zest.core.v1.ZestLoop;
-import org.mozilla.zest.core.v1.ZestLoopClientElements;
-import org.mozilla.zest.core.v1.ZestLoopFile;
-import org.mozilla.zest.core.v1.ZestLoopInteger;
-import org.mozilla.zest.core.v1.ZestLoopRegex;
-import org.mozilla.zest.core.v1.ZestLoopString;
-import org.mozilla.zest.core.v1.ZestLoopTokenFileSet;
-import org.mozilla.zest.core.v1.ZestLoopTokenIntegerSet;
-import org.mozilla.zest.core.v1.ZestLoopTokenStringSet;
-import org.mozilla.zest.core.v1.ZestScript;
-import org.mozilla.zest.core.v1.ZestStatement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.extension.script.ScriptNode;
 import org.zaproxy.zap.extension.zest.ExtensionZest;
 import org.zaproxy.zap.extension.zest.ZestScriptWrapper;
 import org.zaproxy.zap.extension.zest.ZestZapUtils;
 import org.zaproxy.zap.view.StandardFieldsDialog;
+import org.zaproxy.zest.core.v1.ZestLoop;
+import org.zaproxy.zest.core.v1.ZestLoopClientElements;
+import org.zaproxy.zest.core.v1.ZestLoopFile;
+import org.zaproxy.zest.core.v1.ZestLoopInteger;
+import org.zaproxy.zest.core.v1.ZestLoopRegex;
+import org.zaproxy.zest.core.v1.ZestLoopString;
+import org.zaproxy.zest.core.v1.ZestLoopTokenFileSet;
+import org.zaproxy.zest.core.v1.ZestLoopTokenIntegerSet;
+import org.zaproxy.zest.core.v1.ZestLoopTokenStringSet;
+import org.zaproxy.zest.core.v1.ZestScript;
+import org.zaproxy.zest.core.v1.ZestStatement;
 
 public class ZestLoopDialog extends StandardFieldsDialog implements ZestDialog {
     private static final long serialVersionUID = 3720969585202318312L;
@@ -78,7 +79,7 @@ public class ZestLoopDialog extends StandardFieldsDialog implements ZestDialog {
     private static final String FIELD_EXACT = "zest.dialog.loop.regex.exact";
     private static final String FIELD_GROUP = "zest.dialog.loop.regex.group";
 
-    private static final Logger logger = Logger.getLogger(ZestLoopDialog.class);
+    private static final Logger logger = LogManager.getLogger(ZestLoopDialog.class);
 
     public ZestLoopDialog(ExtensionZest extension, Frame owner, Dimension dim) {
         super(owner, "zest.dialog.loop.add.title", dim);

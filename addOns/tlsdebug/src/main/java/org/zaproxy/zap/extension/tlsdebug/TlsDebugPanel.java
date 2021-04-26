@@ -41,7 +41,8 @@ import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import org.apache.commons.httpclient.URI;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.AbstractPanel;
 import org.parosproxy.paros.model.Model;
@@ -56,13 +57,14 @@ import org.zaproxy.zap.view.NodeSelectDialog;
 public class TlsDebugPanel extends AbstractPanel implements Tab {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger logger = Logger.getLogger(TlsDebugPanel.class);
+    private static final Logger logger = LogManager.getLogger(TlsDebugPanel.class);
 
     private static final String RESOURCES = "/org/zaproxy/zap/extension/tlsdebug/resources";
     private static final ImageIcon TLSDEBUG_ICON =
             new ImageIcon(TlsDebugPanel.class.getResource(RESOURCES + "/tlsdebug.png"));
 
     private ExtensionTlsDebug extension;
+    private JPanel panelContent;
     private JButton checkButton;
     private ZapTextField urlField;
     private JTextArea outputArea;
@@ -79,10 +81,10 @@ public class TlsDebugPanel extends AbstractPanel implements Tab {
                         .getMenuShortcutKeyStroke(KeyEvent.VK_D, KeyEvent.ALT_DOWN_MASK, false));
         this.setLayout(new BorderLayout());
 
-        JPanel panelContent = new JPanel(new GridBagLayout());
+        panelContent = new JPanel(new GridBagLayout());
         this.add(panelContent, BorderLayout.NORTH);
 
-        panelContent.setBackground(new Color(UIManager.getColor("TextField.background").getRGB()));
+        setDefaultPanelContentBackground();
         panelContent.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
 
         panelContent.add(
@@ -147,6 +149,19 @@ public class TlsDebugPanel extends AbstractPanel implements Tab {
         outputPanel.add(jScrollPane, BorderLayout.CENTER);
 
         this.add(outputPanel, BorderLayout.CENTER);
+    }
+
+    private void setDefaultPanelContentBackground() {
+        if (panelContent != null) {
+            panelContent.setBackground(
+                    new Color(UIManager.getColor("TextField.background").getRGB()));
+        }
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        setDefaultPanelContentBackground();
     }
 
     private ZapTextField getUrlField() {

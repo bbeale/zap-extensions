@@ -20,10 +20,8 @@
 package org.zaproxy.zap.extension.zest.menu;
 
 import java.lang.reflect.Method;
-import org.apache.log4j.Logger;
-import org.mozilla.zest.core.v1.ZestRequest;
-import org.mozilla.zest.core.v1.ZestResponse;
-import org.mozilla.zest.core.v1.ZestStatement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.Extension;
@@ -35,12 +33,15 @@ import org.zaproxy.zap.extension.zest.ZestResultsPanel;
 import org.zaproxy.zap.extension.zest.ZestZapUtils;
 import org.zaproxy.zap.view.messagecontainer.http.HttpMessageContainer;
 import org.zaproxy.zap.view.popup.PopupMenuItemHistoryReferenceContainer;
+import org.zaproxy.zest.core.v1.ZestRequest;
+import org.zaproxy.zest.core.v1.ZestResponse;
+import org.zaproxy.zest.core.v1.ZestStatement;
 
 public class ZestCompareReqRespPopupMenu extends PopupMenuItemHistoryReferenceContainer {
 
     private static final long serialVersionUID = 2282358266003940700L;
 
-    private static final Logger LOGGER = Logger.getLogger(ZestCompareReqRespPopupMenu.class);
+    private static final Logger LOGGER = LogManager.getLogger(ZestCompareReqRespPopupMenu.class);
 
     private ExtensionZest extension;
     private boolean request = false;
@@ -106,7 +107,7 @@ public class ZestCompareReqRespPopupMenu extends PopupMenuItemHistoryReferenceCo
                                     this.request);
                         }
                     } catch (Exception e) {
-                        LOGGER.error("Failed to show diff dialogue: " + e.getMessage(), e);
+                        LOGGER.error("Failed to show diff dialogue: {}", e.getMessage(), e);
                     }
                 }
             }

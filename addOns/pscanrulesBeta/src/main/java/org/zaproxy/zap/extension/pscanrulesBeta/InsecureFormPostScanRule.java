@@ -27,7 +27,6 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.network.HttpStatusCode;
 import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
@@ -52,9 +51,7 @@ public class InsecureFormPostScanRule extends PluginPassiveScanner {
 
     @Override
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
-        if (msg.getResponseHeader().getStatusCode() != HttpStatusCode.OK
-                || !isHttps(msg)
-                || !isResponseHTML(msg, source)) {
+        if (!getHelper().isPage200(msg) || !isHttps(msg) || !isResponseHTML(msg, source)) {
             return;
         }
 
@@ -101,7 +98,7 @@ public class InsecureFormPostScanRule extends PluginPassiveScanner {
                 .setOtherInfo(getExtraInfoMessage(msg, formElement))
                 .setSolution(getSolutionMessage())
                 .setReference(getReferenceMessage())
-                .setCweId(16) // CWE-16: Configuration
+                .setCweId(319) // CWE-319: Cleartext Transmission of Sensitive Information
                 .setWascId(15) // WASC-15: Application Misconfiguration
                 .raise();
     }

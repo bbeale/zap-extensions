@@ -24,43 +24,44 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
-import org.mozilla.zest.core.v1.ZestActionFail;
-import org.mozilla.zest.core.v1.ZestActionGlobalVariableRemove;
-import org.mozilla.zest.core.v1.ZestActionGlobalVariableSet;
-import org.mozilla.zest.core.v1.ZestActionIntercept;
-import org.mozilla.zest.core.v1.ZestActionInvoke;
-import org.mozilla.zest.core.v1.ZestActionPrint;
-import org.mozilla.zest.core.v1.ZestActionScan;
-import org.mozilla.zest.core.v1.ZestActionSleep;
-import org.mozilla.zest.core.v1.ZestAssertion;
-import org.mozilla.zest.core.v1.ZestAssignment;
-import org.mozilla.zest.core.v1.ZestClientAssignCookie;
-import org.mozilla.zest.core.v1.ZestClientElementAssign;
-import org.mozilla.zest.core.v1.ZestClientElementClear;
-import org.mozilla.zest.core.v1.ZestClientElementClick;
-import org.mozilla.zest.core.v1.ZestClientElementSendKeys;
-import org.mozilla.zest.core.v1.ZestClientElementSubmit;
-import org.mozilla.zest.core.v1.ZestClientLaunch;
-import org.mozilla.zest.core.v1.ZestClientScreenshot;
-import org.mozilla.zest.core.v1.ZestClientSwitchToFrame;
-import org.mozilla.zest.core.v1.ZestClientWindowClose;
-import org.mozilla.zest.core.v1.ZestClientWindowHandle;
-import org.mozilla.zest.core.v1.ZestClientWindowOpenUrl;
-import org.mozilla.zest.core.v1.ZestComment;
-import org.mozilla.zest.core.v1.ZestConditional;
-import org.mozilla.zest.core.v1.ZestControlLoopBreak;
-import org.mozilla.zest.core.v1.ZestControlLoopNext;
-import org.mozilla.zest.core.v1.ZestControlReturn;
-import org.mozilla.zest.core.v1.ZestElement;
-import org.mozilla.zest.core.v1.ZestExpression;
-import org.mozilla.zest.core.v1.ZestLoop;
-import org.mozilla.zest.core.v1.ZestRequest;
-import org.mozilla.zest.core.v1.ZestStatement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.extension.script.ScriptNode;
 import org.zaproxy.zap.utils.DisplayUtils;
 import org.zaproxy.zap.view.OverlayIcon;
+import org.zaproxy.zest.core.v1.ZestActionFail;
+import org.zaproxy.zest.core.v1.ZestActionGlobalVariableRemove;
+import org.zaproxy.zest.core.v1.ZestActionGlobalVariableSet;
+import org.zaproxy.zest.core.v1.ZestActionIntercept;
+import org.zaproxy.zest.core.v1.ZestActionInvoke;
+import org.zaproxy.zest.core.v1.ZestActionPrint;
+import org.zaproxy.zest.core.v1.ZestActionScan;
+import org.zaproxy.zest.core.v1.ZestActionSleep;
+import org.zaproxy.zest.core.v1.ZestAssertion;
+import org.zaproxy.zest.core.v1.ZestAssignment;
+import org.zaproxy.zest.core.v1.ZestClientAssignCookie;
+import org.zaproxy.zest.core.v1.ZestClientElementAssign;
+import org.zaproxy.zest.core.v1.ZestClientElementClear;
+import org.zaproxy.zest.core.v1.ZestClientElementClick;
+import org.zaproxy.zest.core.v1.ZestClientElementSendKeys;
+import org.zaproxy.zest.core.v1.ZestClientElementSubmit;
+import org.zaproxy.zest.core.v1.ZestClientLaunch;
+import org.zaproxy.zest.core.v1.ZestClientScreenshot;
+import org.zaproxy.zest.core.v1.ZestClientSwitchToFrame;
+import org.zaproxy.zest.core.v1.ZestClientWindowClose;
+import org.zaproxy.zest.core.v1.ZestClientWindowHandle;
+import org.zaproxy.zest.core.v1.ZestClientWindowOpenUrl;
+import org.zaproxy.zest.core.v1.ZestComment;
+import org.zaproxy.zest.core.v1.ZestConditional;
+import org.zaproxy.zest.core.v1.ZestControlLoopBreak;
+import org.zaproxy.zest.core.v1.ZestControlLoopNext;
+import org.zaproxy.zest.core.v1.ZestControlReturn;
+import org.zaproxy.zest.core.v1.ZestElement;
+import org.zaproxy.zest.core.v1.ZestExpression;
+import org.zaproxy.zest.core.v1.ZestLoop;
+import org.zaproxy.zest.core.v1.ZestRequest;
+import org.zaproxy.zest.core.v1.ZestStatement;
 
 /**
  * Custom renderer for {@link ZestScriptsPanel} to set custom icons and tooltips. If you want
@@ -258,7 +259,7 @@ public class ZestTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private static final long serialVersionUID = -4278691012245035225L;
 
-    private static final Logger logger = Logger.getLogger(ZestTreeCellRenderer.class);
+    private static final Logger logger = LogManager.getLogger(ZestTreeCellRenderer.class);
 
     public ZestTreeCellRenderer() {}
 
@@ -400,8 +401,8 @@ public class ZestTreeCellRenderer extends DefaultTreeCellRenderer {
                         setIcon(CLIENT_WINDOW_OPEN_URL_ICON);
                     } else {
                         logger.error(
-                                "Unrecognised element element class="
-                                        + zew.getElement().getClass().getCanonicalName());
+                                "Unrecognised element element class={}",
+                                zew.getElement().getClass().getCanonicalName());
                     }
                 }
             }

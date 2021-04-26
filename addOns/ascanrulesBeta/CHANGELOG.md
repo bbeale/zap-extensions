@@ -3,6 +3,46 @@ All notable changes to this add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+### Changed
+- Now using 2.10 logging infrastructure (Log4j 2.x).
+- The .env file scan rule now performs a simple content check to reduce false positives (Issue 6099).
+- The trace.axd file scan rule now performs a content check to reduce false positives (Issue 6517).
+- XML External Entity Attack scan rule changed to detect a possible XML File Reflection Attack when XML validation is present. (Issue 6204)
+
+## [33] - 2020-12-15
+### Changed
+- Now targeting ZAP 2.10.
+- The following scan rules now support Custom Page definitions:
+  - Hidden Files
+  - HTTPS as HTTP
+  - Insecure HTTP Methods
+  - Integer Overflow
+  - Padding Oracle
+  - Remove Code Execution CVE-2012-1823
+  - Session Fixation
+  - Source Code Disclosure CVE-2012-1823
+  - Source Code Disclosure Git
+  - Source Code Disclosure SVN
+
+## [32] - 2020-11-26
+### Changed
+- XML External Entity Attack scan rule changed to parse response body irrespective of the HTTP response status code. (Issue 6203)
+- XML External Entity Attack scan rule changed to skip only Remote File Inclusion Attack when Callback extension is not available.
+- Maintenance changes.
+- The Relative Path Confusion scan rule no longer treats 'href="#"' as a problematic use.
+
+### Fixed
+ - Terminology.
+ - Correct reason shown when the XML External Entity Attack scan rule is skipped.
+ - SocketTimeoutException in the Proxy Disclosure scan rule.
+
+### Added
+- The following scan rules were promoted to Beta: Cloud Meta Data, .env File, Hidden Files, XSLT Injection (Issue 6211).
+
+### Removed
+- The following scan rules were removed and promoted to Release: ELMAH Information Leak, .htaccess Information Leak (Issue 6211).
+
 ## [31] - 2020-09-02
 ### Changed
 - ELMAH Information Leak ensure that test requests are appropriately rebuilt for this scan rule (Issue 6129).
@@ -222,6 +262,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[33]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v33
+[32]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v32
 [31]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v31
 [30]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v30
 [29]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v29
